@@ -122,11 +122,11 @@ func PGGetEngine(master, sync bool) (*PGEngine, error) {
 			return pgEngineMaster, nil
 		}
 
-		return nil, fmt.Errorf("db engine not avaliable")
+		return nil, fmt.Errorf("DB engine not avaliable")
 	}
 
 	// if sync {} //TODO
-	return nil, fmt.Errorf("db engine not avaliable")
+	return nil, fmt.Errorf("DB engine not avaliable")
 }
 
 func pgNewMasterAutoCloseSession() *PGSession {
@@ -157,7 +157,7 @@ func InsertRow(s *PGSession, m DBModel) (err error) {
 	_, err = s.AllCols().InsertOne(m)
 
 	if err != nil && strings.Index(err.Error(), "duplicate key") >= 0 {
-		err = errors.New("db model duplicated")
+		err = errors.New("DB model duplicated")
 	}
 
 	return
@@ -186,7 +186,7 @@ func InsertMultiRows(s *PGSession, m []interface{}) (err error) {
 	}
 
 	if err != nil && strings.Index(err.Error(), "duplicate key") >= 0 {
-		err = errors.New("db model duplicated")
+		err = errors.New("DB model duplicated")
 	}
 
 	return
@@ -205,7 +205,7 @@ func UpdateDBModel(s *PGSession, m UniqueDBModel) (err error) {
 
 	_, err = s.AllCols().Where(whereStr, whereArgs...).Update(m)
 	if err != nil && strings.Index(err.Error(), "duplicate key") >= 0 {
-		err = errors.New("db model duplicated")
+		err = errors.New("DB model duplicated")
 	}
 
 	return
@@ -225,12 +225,12 @@ func DeleteDBModel(s *PGSession, m UniqueDBModel) (err error) {
 func pgGenSequenceValue(sequence string) (int64, error) {
 	results, err := pgEngineMaster.Query("select nextval(?) as next", sequence)
 	if err != nil {
-		return 0, fmt.Errorf("gen %s sequence error: %s", sequence, err.Error())
+		return 0, fmt.Errorf("Generate %s sequence error: %s", sequence, err.Error())
 	}
 
 	id, err := strconv.ParseInt(string(results[0]["next"]), 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("gen %s sequence error: %s", sequence, err.Error())
+		return 0, fmt.Errorf("Generate %s sequence error: %s", sequence, err.Error())
 	}
 
 	return id, nil

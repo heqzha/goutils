@@ -75,7 +75,7 @@ func HTTPPut(url string, bodyData []byte)([]byte, error) {
 func HTTPParseURL(srcURL string, params map[string][]string) (string, error){
 	u, err := url.Parse(srcURL);
 	if err != nil{
-		return "", fmt.Errorf("failed to parse url: %s", err.Error())
+		return "", fmt.Errorf("Failed to parse url: %s", err.Error())
 	}
 	p := url.Values{}
 	for k,v := range params{
