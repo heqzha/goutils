@@ -1,4 +1,4 @@
-package utils
+package goutils
 
 import (
 	"fmt"
@@ -172,6 +172,14 @@ func LogDebug(typ, msg string) error {
 	return nil
 }
 
+func LogDebugM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Debug(m)
+	return nil
+}
+
 func LogInfo(typ, msg string) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
@@ -180,6 +188,14 @@ func LogInfo(typ, msg string) error {
 		"type": typ,
 		"msg":  msg,
 	})
+	return nil
+}
+
+func LogInfoM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Info(m)
 	return nil
 }
 
@@ -194,6 +210,14 @@ func LogWarn(typ, msg string) error {
 	return nil
 }
 
+func LogWarnM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Warn(m)
+	return nil
+}
+
 func LogError(typ, msg string) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
@@ -202,6 +226,14 @@ func LogError(typ, msg string) error {
 		"type": typ,
 		"msg":  msg,
 	})
+	return nil
+}
+
+func LogErrorM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Error(m)
 	return nil
 }
 
@@ -216,6 +248,14 @@ func LogFatal(typ, msg string) error {
 	return nil
 }
 
+func LogFatalM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Fatal(m)
+	return nil
+}
+
 func LogPanic(typ, msg string) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
@@ -224,5 +264,13 @@ func LogPanic(typ, msg string) error {
 		"type": typ,
 		"msg":  msg,
 	})
+	return nil
+}
+
+func LogPanicM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Panic(m)
 	return nil
 }
