@@ -162,14 +162,10 @@ func LogConfig(path string, level logrus.Level) {
 }
 
 func LogDebug(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Debug(map[string]interface{}{
+	return LogDebugM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogDebugM(m map[string]interface{}) error {
@@ -181,14 +177,10 @@ func LogDebugM(m map[string]interface{}) error {
 }
 
 func LogInfo(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Info(map[string]interface{}{
+	return LogInfoM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogInfoM(m map[string]interface{}) error {
@@ -200,14 +192,10 @@ func LogInfoM(m map[string]interface{}) error {
 }
 
 func LogWarn(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Warn(map[string]interface{}{
+	return LogWarnM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogWarnM(m map[string]interface{}) error {
@@ -219,14 +207,10 @@ func LogWarnM(m map[string]interface{}) error {
 }
 
 func LogError(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Error(map[string]interface{}{
+	return LogErrorM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogErrorM(m map[string]interface{}) error {
@@ -238,14 +222,10 @@ func LogErrorM(m map[string]interface{}) error {
 }
 
 func LogFatal(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Fatal(map[string]interface{}{
+	return LogFatalM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogFatalM(m map[string]interface{}) error {
@@ -257,14 +237,10 @@ func LogFatalM(m map[string]interface{}) error {
 }
 
 func LogPanic(typ, msg string) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Panic(map[string]interface{}{
+	return LogPanicM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
-	return nil
 }
 
 func LogPanicM(m map[string]interface{}) error {
