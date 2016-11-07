@@ -5,7 +5,7 @@ import(
 	"time"
 )
 
-func OthersRunPeriodicTask(f func() time.Duration, task_name string, defaultInterval time.Duration) {
+func TaskRunPeriodic(f func() time.Duration, task_name string, defaultInterval time.Duration) {
 	if defaultInterval < time.Second {
 		defaultInterval = time.Second
 	}

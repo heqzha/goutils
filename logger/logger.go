@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	ccc "github.com/heqzha/goutils/concurrency"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -28,7 +29,9 @@ const (
 )
 
 func LogConfig(path string, level logrus.Level) {
+	nowDate = time.Now().Format("2006-01-02")
 	logger = newLogger(path, level)
+	ccc.TaskRunPeriodic(rotateLog, "LoggerConfig", 5 * time.Second)
 }
 
 func LogDebug(typ, msg string) error {

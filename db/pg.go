@@ -9,6 +9,7 @@ import (
 	"strings"
 	"strconv"
 
+	ccc "github.com/heqzha/goutils/concurrency"
 	xormcore "github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
 	_ "github.com/lib/pq"
@@ -73,7 +74,7 @@ func PGConfig(engine *PGEngine,
 }
 
 func PGRunCheckMasterStatus(interval time.Duration) {
-	OthersRunPeriodicTask(func() time.Duration{
+	ccc.TaskRunPeriodic(func() time.Duration{
 		pgCheckDBEngineStatus(pgEngineMaster)
 		return interval
 	}, "PGRunCheckMasterStatus", interval*time.Second)
