@@ -1,4 +1,4 @@
-package goutils
+package db
 
 import(
 	"fmt"

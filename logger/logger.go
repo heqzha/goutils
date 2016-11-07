@@ -1,4 +1,4 @@
-package goutils
+package logger
 
 import (
 	"fmt"
@@ -26,6 +26,100 @@ const (
 	LOG_LEVEL_FATAL = logrus.FatalLevel
 	LOG_LEVEL_PANIC = logrus.PanicLevel
 )
+
+func LogConfig(path string, level logrus.Level) {
+	logger = newLogger(path, level)
+}
+
+func LogDebug(typ, msg string) error {
+	return LogDebugM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogDebugM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Debug(m)
+	return nil
+}
+
+func LogInfo(typ, msg string) error {
+	return LogInfoM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogInfoM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Info(m)
+	return nil
+}
+
+func LogWarn(typ, msg string) error {
+	return LogWarnM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogWarnM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Warn(m)
+	return nil
+}
+
+func LogError(typ, msg string) error {
+	return LogErrorM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogErrorM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Error(m)
+	return nil
+}
+
+func LogFatal(typ, msg string) error {
+	return LogFatalM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogFatalM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Fatal(m)
+	return nil
+}
+
+func LogPanic(typ, msg string) error {
+	return LogPanicM(map[string]interface{}{
+		"type": typ,
+		"msg":  msg,
+	})
+}
+
+func LogPanicM(m map[string]interface{}) error {
+	if logger == nil {
+		return fmt.Errorf("Configure logger before using it")
+	}
+	logger.Panic(m)
+	return nil
+}
 
 type Logger struct {
 	*logrus.Logger
@@ -155,98 +249,4 @@ func rotateLog() time.Duration {
 	logger.rotate()
 	now := time.Now()
 	return time.Duration(23-now.Hour())*time.Hour + time.Duration(59-now.Minute())*time.Minute + time.Duration(60-now.Second())*time.Second
-}
-
-func LogConfig(path string, level logrus.Level) {
-	logger = newLogger(path, level)
-}
-
-func LogDebug(typ, msg string) error {
-	return LogDebugM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogDebugM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Debug(m)
-	return nil
-}
-
-func LogInfo(typ, msg string) error {
-	return LogInfoM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogInfoM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Info(m)
-	return nil
-}
-
-func LogWarn(typ, msg string) error {
-	return LogWarnM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogWarnM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Warn(m)
-	return nil
-}
-
-func LogError(typ, msg string) error {
-	return LogErrorM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogErrorM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Error(m)
-	return nil
-}
-
-func LogFatal(typ, msg string) error {
-	return LogFatalM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogFatalM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Fatal(m)
-	return nil
-}
-
-func LogPanic(typ, msg string) error {
-	return LogPanicM(map[string]interface{}{
-		"type": typ,
-		"msg":  msg,
-	})
-}
-
-func LogPanicM(m map[string]interface{}) error {
-	if logger == nil {
-		return fmt.Errorf("Configure logger before using it")
-	}
-	logger.Panic(m)
-	return nil
 }
