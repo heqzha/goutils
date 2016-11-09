@@ -4,57 +4,61 @@ import(
 	"fmt"
 )
 
-
-var (
-	flowFactory *flow.Factory
+var(
 	errNilFactory = fmt.Errorf("Flow factory is nil")
 )
 
-func FlowConfig(){
-	flowFactory = new(flow.Factory)
+type FlowHandler struct{
+	fct *Factory
 }
 
-func FlowNewLine(handlers ...flow.HandlerFunc) (int, error){
-	if flowFactory == nil{
+func FlowNewHandler() *FlowHandler{
+	return &FlowHandler{
+		fct: new(Factory),
+	}
+}
+
+func (f *FlowHandler)NewLine(handlers ...HandlerFunc) (int, error){
+	if f.fct == nil{
 		return 0, errNilFactory
 	}
-	return flowFactory.NewLine(handlers...), nil
+	return f.fct.NewLine(handlers...), nil
 }
 
-func FlowStart(i int, p flow.Params) error{
-	if flowFactory == nil{
+func (f *FlowHandler)Start(i int, p Params) error{
+	if f.fct == nil{
 		return errNilFactory
 	}
-	flowFactory.Start(i, p)
+	f.fct.Start(i, p)
 	return nil
 }
 
-func FlowStop(i int) error {
-	if flowFactory == nil{
+func (f *FlowHandler)Stop(i int) error {
+	if f.fct == nil{
 		return errNilFactory
 	}
-	flowFactory.Stop(i)
+	f.fct.Stop(i)
 	return nil
 }
 
-func FlowIsStop(i int) (bool, error){
-	if flowFactory == nil{
+func (f *FlowHandler)IsStopped(i int) (bool, error){
+	if f.fct == nil{
 		return false, errNilFactory
 	}
-	return flowFactory.IsStop(i), nil
+	return f.fct.IsStopped(i), nil
 }
 
-func FlowAreAllStop() (bool, error){
-	if flowFactory == nil{
+func (f *FlowHandler)AreAllStopped() (bool, error){
+	if f.fct == nil{
 		return false, errNilFactory
 	}
-	return flowFactory.AreAllStop(), nil
+	return f.fct.AreAllStopped(), nil
 }
 
-func FlowDestory() error{
-	if flowFactory == nil{
+func (f *FlowHandler)Destory() error{
+	if f.fct == nil{
 		return errNilFactory
 	}
-	flowFactory.Destory()
+	f.fct.Destory()
 	return nil
 }
