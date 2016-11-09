@@ -1,48 +1,65 @@
 package concurrency
 
-import(
-	"time"
+import (
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/heqzha/goutils/container"
 )
 
-var(
-	mutex = &sync.Mutex{}
-	workQ = make(chan WorkRequest, 1024)
-)
+type WorkQueue struct{
+	q chan WorkRequest
+	maxLength int
+}
 
-type WorkRequest struct{
-	f func(interface{})interface{}
+func (w *WorkQueue)push(work WorkRequest)error{
+	if len(w.q) >= w.maxLength{
+		return fmt.Errorf("WorkQueue is full, cannot add more works.")
+	}
+	w.q <- work
+	return nil
+}
+
+func (w *WorkQueue)isFull()bool{
+	return len(w.q) >= w.maxLength
+}
+
+func (w *WorkQueue)isEmpty()bool{
+	return len(w.q) == 0
+}
+
+type WorkRequest struct {
+	f      func(interface{}) interface{}
 	params interface{}
-	delay time.Duration
+	delay  time.Duration
 	output chan interface{}
 }
 
-type Worker struct{
-	ID int
+type Worker struct {
+	ID   int
 	Work chan WorkRequest
 	Quit chan bool
 }
 
-func newWorker(id int) Worker{
+func newWorker(id int) Worker {
 	worker := Worker{
-		ID:          id,
-		Work:        make(chan WorkRequest),
-		Quit:    make(chan bool),
+		ID:   id,
+		Work: make(chan WorkRequest),
+		Quit: make(chan bool),
 	}
 	return worker
 }
 
-func (w *Worker) Start(){
-	go func(){
+func (w *Worker) Start() {
+	go func() {
 		for {
 			select {
 			case work := <-w.Work:
 				//Work
-				if work.output != nil{
-					work.output<-work.f(work.params)
-				}else{
+				if work.output != nil {
+					work.output <- work.f(work.params)
+				} else {
 					work.f(work.params)
 				}
 				time.Sleep(work.delay)
@@ -59,63 +76,88 @@ func (w *Worker) Stop() {
 	}()
 }
 
-type WorkerQueue struct{
+type WorkersPool struct {
 	container.Queue
+	workQ *WorkQueue
 	Quit chan bool
+	mutex *sync.Mutex
 }
 
-func (wq *WorkerQueue) WorkStart(nWorkers int){
-	wq.Clear()
-	wq.Quit = make(chan bool)
+func newWorkQueue(max int) *WorkQueue{
+	return &WorkQueue{
+		q: make(chan WorkRequest, max),
+		maxLength: max,
+	}
+}
 
-	for i := 0; i<nWorkers; i++ {
+func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
+	wp.Clear()
+	wp.Quit = make(chan bool)
+	wp.workQ = newWorkQueue(maxBuffer)
+	wp.mutex = &sync.Mutex{}
+
+	for i := 0; i < nWorkers; i++ {
 		worker := newWorker(i)
 		worker.Start()
-		wq.Push(&worker)
+		wp.Push(&worker)
 	}
 
 	go func() {
 		for {
 			select {
-			case work := <- workQ:
+			case work := <-wp.workQ.q:
 				go func() {
-					mutex.Lock()
-					worker := wq.Pop().(*Worker)
+					wp.mutex.Lock()
+					worker := wp.Pop().(*Worker)
 					worker.Work <- work
-					wq.Push(worker)
-					mutex.Unlock()
+					wp.Push(worker)
+					wp.mutex.Unlock()
 				}()
-			case <- wq.Quit:
+			case <-wp.Quit:
 				return
 			}
 		}
 	}()
 }
 
-func (wq *WorkerQueue) WorkCollect(f func(interface{})interface{}, params interface{}, delay time.Duration){
-	work := WorkRequest{
-		f:f,
-		params:params,
-		delay:delay,
-		output:nil,
+func (wp *WorkersPool) Collect(f func(interface{}) interface{}, params interface{}, delay time.Duration) error{
+	if wp.workQ == nil{
+		return fmt.Errorf("WorkQueue is nil.")
 	}
-	workQ <- work
+	work := WorkRequest{
+		f:      f,
+		params: params,
+		delay:  delay,
+		output: nil,
+	}
+	return wp.workQ.push(work)
 }
 
-func (wq *WorkerQueue) WorkCollectWithOutput(f func(interface{})interface{}, params interface{}, delay time.Duration, output chan interface{}){
-	work := WorkRequest{
-		f:f,
-		params:params,
-		delay:delay,
-		output:output,
+func (wp *WorkersPool) CollectWithOutput(f func(interface{}) interface{}, params interface{}, delay time.Duration, output chan interface{}) error{
+	if wp.workQ == nil{
+		return fmt.Errorf("WorkQueue is nil.")
 	}
-	workQ <- work
+	work := WorkRequest{
+		f:      f,
+		params: params,
+		delay:  delay,
+		output: output,
+	}
+	return wp.workQ.push(work)
 }
 
-func (wq *WorkerQueue) WorkStop(){
-	for wq.Len() > 0{
-		w := wq.Pop().(*Worker)
+func (wp *WorkersPool) Stop() {
+	for wp.Len() > 0 {
+		w := wp.Pop().(*Worker)
 		w.Stop()
 	}
-	wq.Quit<-true
+	wp.Quit <- true
+}
+
+func (wp *WorkersPool) IsFull() bool{
+	return wp.workQ.isFull()
+}
+
+func (wp *WorkersPool) IsEmpty() bool{
+	return wp.workQ.isEmpty()
 }
