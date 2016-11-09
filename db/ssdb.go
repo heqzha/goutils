@@ -3,6 +3,7 @@ package db
 import(
 	"fmt"
 	"time"
+	"math"
 
 	"github.com/seefan/gossdb"
 )
@@ -54,7 +55,7 @@ func ssdbFormatSec(dur time.Duration) int64 {
 	return int64(dur / time.Second)
 }
 
-func (h *SSDBHandler)SSDBExists(key string)(bool, error){
+func (h *SSDBHandler)Exists(key string)(bool, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return false, err
@@ -64,7 +65,7 @@ func (h *SSDBHandler)SSDBExists(key string)(bool, error){
 	return cli.Exists(key)
 }
 
-func (h *SSDBHandler)SSDBExpire(key string, exp time.Duration) error{
+func (h *SSDBHandler)Expire(key string, exp time.Duration) error{
 	if exp > 0{
 		cli, err := h.newClient()
 		if err != nil{
@@ -82,7 +83,7 @@ func (h *SSDBHandler)SSDBExpire(key string, exp time.Duration) error{
 	return nil
 }
 
-func (h *SSDBHandler)SSDBDel(key string) error{
+func (h *SSDBHandler)Del(key string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -92,7 +93,7 @@ func (h *SSDBHandler)SSDBDel(key string) error{
 	return cli.Del(key)
 }
 
-func (h *SSDBHandler)SSDBSet(key string, value string) error{
+func (h *SSDBHandler)Set(key string, value string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -102,7 +103,7 @@ func (h *SSDBHandler)SSDBSet(key string, value string) error{
 	return cli.Set(key, value)
 }
 
-func (h *SSDBHandler)SSDBSetWithExp(key string, value string, exp time.Duration) error{
+func (h *SSDBHandler)SetWithExp(key string, value string, exp time.Duration) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -112,7 +113,7 @@ func (h *SSDBHandler)SSDBSetWithExp(key string, value string, exp time.Duration)
 	return cli.Set(key, value, ssdbFormatSec(exp))
 }
 
-func (h *SSDBHandler)SSDBGet(key string) (string, error){
+func (h *SSDBHandler)Get(key string) (string, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return "", err
@@ -129,11 +130,11 @@ func (h *SSDBHandler)SSDBGet(key string) (string, error){
 ////////////////
 // SSDB Queue //
 ////////////////
-func (h *SSDBHandler)SSDBQPushBack(key string, values ...string) (int64, error){
-	return h.SSDBQPushBackWithExpire(key, 0, values...)
+func (h *SSDBHandler)QPushBack(key string, values ...string) (int64, error){
+	return h.QPushBackWithExpire(key, 0, values...)
 }
 
-func (h *SSDBHandler)SSDBQPushBackWithExpire(key string, exp time.Duration, values ...string) (int64, error){
+func (h *SSDBHandler)QPushBackWithExpire(key string, exp time.Duration, values ...string) (int64, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return 0, err
@@ -148,10 +149,10 @@ func (h *SSDBHandler)SSDBQPushBackWithExpire(key string, exp time.Duration, valu
 	if err != nil{
 		return 0, err
 	}
-	return size, h.SSDBExpire(key, exp)
+	return size, h.Expire(key, exp)
 }
 
-func (h *SSDBHandler)SSDBQRangeAll(key string)([]string, error){
+func (h *SSDBHandler)QRangeAll(key string)([]string, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return nil, err
@@ -169,7 +170,7 @@ func (h *SSDBHandler)SSDBQRangeAll(key string)([]string, error){
 	return values, nil
 }
 
-func (h *SSDBHandler)SSDBQClear(key string) error{
+func (h *SSDBHandler)QClear(key string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -182,11 +183,11 @@ func (h *SSDBHandler)SSDBQClear(key string) error{
 //////////////////
 // SSDB Hashmap //
 //////////////////
-func (h *SSDBHandler)SSDBHSet(key, field string, value string) error{
-	return h.SSDBHSetWithExp(key, 0, field, value)
+func (h *SSDBHandler)HSet(key, field string, value string) error{
+	return h.HSetWithExp(key, 0, field, value)
 }
 
-func (h *SSDBHandler)SSDBHSetWithExp(key string, exp time.Duration, field string, value string) error{
+func (h *SSDBHandler)HSetWithExp(key string, exp time.Duration, field string, value string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -196,10 +197,10 @@ func (h *SSDBHandler)SSDBHSetWithExp(key string, exp time.Duration, field string
 	if err != nil{
 		return err
 	}
-	return h.SSDBExpire(key, exp)
+	return h.Expire(key, exp)
 }
 
-func (h *SSDBHandler)SSDBHGet(key, field string)(string, error){
+func (h *SSDBHandler)HGet(key, field string)(string, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return "", err
@@ -213,11 +214,11 @@ func (h *SSDBHandler)SSDBHGet(key, field string)(string, error){
 	return value.String(), nil
 }
 
-func (h *SSDBHandler)SSDBHSetMap(key string, values map[string]string) error{
-	return h.SSDBHSetMapWithExp(key, 0, values)
+func (h *SSDBHandler)HSetMap(key string, values map[string]string) error{
+	return h.HSetMapWithExp(key, 0, values)
 }
 
-func (h *SSDBHandler)SSDBHSetMapWithExp(key string, exp time.Duration, values map[string]string)(error){
+func (h *SSDBHandler)HSetMapWithExp(key string, exp time.Duration, values map[string]string)(error){
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -231,10 +232,10 @@ func (h *SSDBHandler)SSDBHSetMapWithExp(key string, exp time.Duration, values ma
 		}
 	}
 
-	return h.SSDBExpire(key, exp)
+	return h.Expire(key, exp)
 }
 
-func (h *SSDBHandler)SSDBHGetMap(key string) (map[string]string, error){
+func (h *SSDBHandler)HGetMap(key string) (map[string]string, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return nil, err
@@ -252,7 +253,7 @@ func (h *SSDBHandler)SSDBHGetMap(key string) (map[string]string, error){
 	return values, nil
 }
 
-func (h *SSDBHandler)SSDBHClear(key string) error{
+func (h *SSDBHandler)HClear(key string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -262,7 +263,7 @@ func (h *SSDBHandler)SSDBHClear(key string) error{
 	return cli.Hclear(key)
 }
 
-func (h *SSDBHandler)SSDBHDel(key, field string) error{
+func (h *SSDBHandler)HDel(key, field string) error{
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -272,7 +273,7 @@ func (h *SSDBHandler)SSDBHDel(key, field string) error{
 	return cli.Hdel(key, field)
 }
 
-func (h *SSDBHandler)SSDBHSize(key string)(int64, error){
+func (h *SSDBHandler)HSize(key string)(int64, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return 0, err
@@ -281,14 +282,27 @@ func (h *SSDBHandler)SSDBHSize(key string)(int64, error){
 	return cli.Hsize(key)
 }
 
+func (h *SSDBHandler)HAllFields(key string)([]string, error){
+	return h.HFields(key, "", "", math.MaxInt64)
+}
+
+func (h *SSDBHandler)HFields(key, fieldStart, fieldEnd string, limit int64)([]string, error){
+	cli, err := h.newClient()
+	if err != nil{
+		return nil, err
+	}
+	defer cli.Close()
+	return cli.Hkeys(key, fieldStart, fieldEnd, limit)
+}
+
 //////////////////////
 // SSDB Sorted Sets //
 //////////////////////
-func (h *SSDBHandler)SSDBZSet(key string, field string, score int64)(error){
-	return h.SSDBZSetWithExp(key, 0, field, score)
+func (h *SSDBHandler)ZSet(key string, field string, score int64)(error){
+	return h.ZSetWithExp(key, 0, field, score)
 }
 
-func (h *SSDBHandler)SSDBZSetWithExp(key string, exp time.Duration, field string, score int64)(error){
+func (h *SSDBHandler)ZSetWithExp(key string, exp time.Duration, field string, score int64)(error){
 	cli, err := h.newClient()
 	if err != nil{
 		return err
@@ -299,10 +313,10 @@ func (h *SSDBHandler)SSDBZSetWithExp(key string, exp time.Duration, field string
 	if err != nil{
 		return err
 	}
-	return h.SSDBExpire(key, exp)
+	return h.Expire(key, exp)
 }
 
-func (h *SSDBHandler)SSDBZGet(key, field string)(int64, error){
+func (h *SSDBHandler)ZGet(key, field string)(int64, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return 0, err
@@ -312,11 +326,11 @@ func (h *SSDBHandler)SSDBZGet(key, field string)(int64, error){
 	return cli.Zget(key, field)
 }
 
-func (h *SSDBHandler)SSDBZTopX(key string, scoreEnd, limit int64)([]string,  []int64, error){
-	return h.ssdbZRScan(key, "", "", scoreEnd, limit)
+func (h *SSDBHandler)ZTopX(key string, scoreEnd, limit int64)([]string,  []int64, error){
+	return h.ZRScan(key, "", "", scoreEnd, limit)
 }
 
-func (h *SSDBHandler)ssdbZRScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error){
+func (h *SSDBHandler)ZRScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error){
 	cli, err := h.newClient()
 	if err != nil{
 		return nil, nil, err
@@ -326,7 +340,7 @@ func (h *SSDBHandler)ssdbZRScan(key, fieldStart string, start, end interface{}, 
 	return cli.Zrscan(key, fieldStart, start, end, limit)
 }
 
-func (h *SSDBHandler)SSDBZExist(key, field string) (bool, error){
+func (h *SSDBHandler)ZExists(key, field string) (bool, error){
 	cli, err := h.newClient()
 	if err != nil{
 		return false, err
@@ -336,7 +350,7 @@ func (h *SSDBHandler)SSDBZExist(key, field string) (bool, error){
 	return cli.Zexists(key, field)
 }
 
-func (h *SSDBHandler)SSDBZDel(key, field string)(error){
+func (h *SSDBHandler)ZDel(key, field string)(error){
 	cli, err := h.newClient()
 	if err != nil{
 		return err
