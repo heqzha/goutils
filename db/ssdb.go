@@ -312,8 +312,8 @@ func (h *SSDBHandler)SSDBZGet(key, field string)(int64, error){
 	return cli.Zget(key, field)
 }
 
-func (h *SSDBHandler)SSDBZTopX(key string, scoreStart, limit int64)([]string,  []int64, error){
-	return h.ssdbZRScan(key, "", scoreStart, "", limit)
+func (h *SSDBHandler)SSDBZTopX(key string, scoreEnd, limit int64)([]string,  []int64, error){
+	return h.ssdbZRScan(key, "", "", scoreEnd, limit)
 }
 
 func (h *SSDBHandler)ssdbZRScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error){
@@ -324,6 +324,16 @@ func (h *SSDBHandler)ssdbZRScan(key, fieldStart string, start, end interface{}, 
 	defer cli.Close()
 
 	return cli.Zrscan(key, fieldStart, start, end, limit)
+}
+
+func (h *SSDBHandler)SSDBZExist(key, field string) (bool, error){
+	cli, err := h.newClient()
+	if err != nil{
+		return false, err
+	}
+	defer cli.Close()
+
+	return cli.Zexists(key, field)
 }
 
 func (h *SSDBHandler)SSDBZDel(key, field string)(error){
