@@ -77,7 +77,7 @@ func (c *Context) HandlerName() string {
 // See example in github.
 func (c *Context) Next() {
 	if !c.IsAborted() {
-		n, end := c.line.next(int(c.index))
+		n, end := c.line.next(c.index)
 		if end {
 			// Reach the end of line
 			c.Abort()
@@ -92,6 +92,15 @@ func (c *Context) Next() {
 func (c *Context) Repeat() {
 	if !c.IsAborted() {
 		c.index = 0
+		c.line.do(c.index, c)
+	}
+}
+
+//Jump should be used only inside middleware.
+// It jump to process i, but keeps all parameters
+func (c *Context) Jump(i int){
+	if !c.IsAborted() {
+		c.index = i
 		c.line.do(c.index, c)
 	}
 }
