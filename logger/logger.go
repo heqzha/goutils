@@ -28,20 +28,22 @@ const (
 	LOG_LEVEL_PANIC = logrus.PanicLevel
 )
 
-func LogConfig(path string, level logrus.Level) {
+func Config(path string, level logrus.Level) {
 	nowDate = time.Now().Format("2006-01-02")
 	logger = newLogger(path, level)
-	ccc.TaskRunPeriodic(rotateLog, "LoggerConfig", 5 * time.Second)
+	ccc.TaskRunPeriodic(func() time.Duration{
+		return rotateLog(logger)
+	}, "LoggerConfig", 5 * time.Second)
 }
 
-func LogDebug(typ, msg string) error {
-	return LogDebugM(map[string]interface{}{
+func Debug(typ, msg string) error {
+	return DebugM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogDebugM(m map[string]interface{}) error {
+func DebugM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -49,14 +51,14 @@ func LogDebugM(m map[string]interface{}) error {
 	return nil
 }
 
-func LogInfo(typ, msg string) error {
-	return LogInfoM(map[string]interface{}{
+func Info(typ, msg string) error {
+	return InfoM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogInfoM(m map[string]interface{}) error {
+func InfoM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -64,14 +66,14 @@ func LogInfoM(m map[string]interface{}) error {
 	return nil
 }
 
-func LogWarn(typ, msg string) error {
-	return LogWarnM(map[string]interface{}{
+func Warn(typ, msg string) error {
+	return WarnM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogWarnM(m map[string]interface{}) error {
+func WarnM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -79,14 +81,14 @@ func LogWarnM(m map[string]interface{}) error {
 	return nil
 }
 
-func LogError(typ, msg string) error {
-	return LogErrorM(map[string]interface{}{
+func Error(typ, msg string) error {
+	return ErrorM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogErrorM(m map[string]interface{}) error {
+func ErrorM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -94,14 +96,14 @@ func LogErrorM(m map[string]interface{}) error {
 	return nil
 }
 
-func LogFatal(typ, msg string) error {
-	return LogFatalM(map[string]interface{}{
+func Fatal(typ, msg string) error {
+	return FatalM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogFatalM(m map[string]interface{}) error {
+func FatalM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -109,14 +111,14 @@ func LogFatalM(m map[string]interface{}) error {
 	return nil
 }
 
-func LogPanic(typ, msg string) error {
-	return LogPanicM(map[string]interface{}{
+func Panic(typ, msg string) error {
+	return PanicM(map[string]interface{}{
 		"type": typ,
 		"msg":  msg,
 	})
 }
 
-func LogPanicM(m map[string]interface{}) error {
+func PanicM(m map[string]interface{}) error {
 	if logger == nil {
 		return fmt.Errorf("Configure logger before using it")
 	}
@@ -238,7 +240,7 @@ func newLogger(path string, level logrus.Level) *Logger {
 	return l
 }
 
-func rotateLog() time.Duration {
+func rotateLog(l *Logger) time.Duration {
 	_nowDate := time.Now().Format("2006-01-02")
 	if _nowDate == nowDate {
 		now := time.Now()
@@ -249,7 +251,7 @@ func rotateLog() time.Duration {
 	defer rotateLock.Unlock()
 
 	nowDate = _nowDate
-	logger.rotate()
+	l.rotate()
 	now := time.Now()
 	return time.Duration(23-now.Hour())*time.Hour + time.Duration(59-now.Minute())*time.Minute + time.Duration(60-now.Second())*time.Second
 }
