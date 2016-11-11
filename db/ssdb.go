@@ -326,8 +326,8 @@ func (h *SSDBHandler)ZGet(key, field string)(int64, error){
 	return cli.Zget(key, field)
 }
 
-func (h *SSDBHandler)ZTopX(key string, start, limit int64)([]string,  []int64, error){
-	return h.ZRScan(key, "", start, "", limit)
+func (h *SSDBHandler)ZTopX(key, keyStart string, start, limit int64)([]string,  []int64, error){
+	return h.ZRScan(key, keyStart, start, "", limit)
 }
 
 func (h *SSDBHandler)ZRScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error){
