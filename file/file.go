@@ -6,6 +6,10 @@ import(
 	"io/ioutil"
 )
 
+func Mv(src, dst string)(error){
+	return os.Rename(src, dst)
+}
+
 func Exists(path string)(bool){
 	_, err := os.Stat(path)
 	return !os.IsNotExist(err)
