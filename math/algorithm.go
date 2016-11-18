@@ -39,7 +39,7 @@ func LBWilsonScoreWithBernoulliParam(positive int64, all int64, confidence float
 	}
 	fPos := float64(positive)
 	fAll := float64(all)
-	z := PNormalDist(1.0 - (1.0-confidence)/2.0)
+	z := PNormalDist(1.0 - (confidence)/2.0)
 	phat := 1.0 * fPos / fAll
 	return (phat + z*z/(2.0*fAll) - z*math.Sqrt((phat*(1-phat)+z*z/(4*fAll))/fAll)) / (1 + z*z/fAll)
 }
