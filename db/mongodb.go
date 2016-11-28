@@ -134,6 +134,16 @@ func (h *MongoDBHandler)Insert(db, cName string, cObjects...interface{}) error{
 	return c.Insert(cObjects...)
 }
 
+func (h *MongoDBHandler)Update(db, cName string, selector BsonM, cObject interface{}) error{
+	c := h.se.DB(db).C(cName)
+	return c.Update(selector, cObject)
+}
+
+func (h *MongoDBHandler)UpdateByID(db, cName, id string, cObject interface{}) error{
+	c := h.se.DB(db).C(cName)
+	return c.UpdateId(bson.ObjectIdHex(id), cObject)
+}
+
 func (h *MongoDBHandler)Upsert(db, cName string, selector BsonM, cObject interface{}) (int, error){
 	c := h.se.DB(db).C(cName)
 	info, err := c.Upsert(selector, cObject)
@@ -149,7 +159,7 @@ func (h *MongoDBHandler)UpsertedId(db, cName, id string, cObject interface{})(st
 	if err != nil{
 		return "", err
 	}
-	return string(info.UpsertedId.(bson.ObjectId)), nil
+	return info.Matched, nil
 }
 
 func (h *MongoDBHandler)Remove(db, cName string, selector BsonM) error{

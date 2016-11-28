@@ -11,6 +11,7 @@ type ATestData struct{
 	ID string `bson:"_id"`
 	Name string `bson:"name"`
 	Age int32 `bson:"age"`
+	Data interface{} `bson:"data"`
 	CreatedTs int64 `bson:"created_ts"`
 }
 
@@ -28,6 +29,12 @@ func TestMongoDBHandler(t *testing.T){
 		ID: h.NewID(),
 		Name: "TestName",
 		Age: 10,
+		Data: map[string]interface{}{
+			"sex": true,
+			"height": 150.0,
+			"weight": 60.0,
+			"other":"other data",
+		},
 		CreatedTs: date.DateNowSecond(),
 	}
 	if err := h.Insert(dbName, tName, data); err!=nil{
