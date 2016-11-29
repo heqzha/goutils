@@ -12,6 +12,7 @@ type ATestData struct{
 	Name string `bson:"name"`
 	Age int32 `bson:"age"`
 	Data interface{} `bson:"data"`
+	Address string `bson:address`
 	CreatedTs int64 `bson:"created_ts"`
 }
 
@@ -35,6 +36,7 @@ func TestMongoDBHandler(t *testing.T){
 			"weight": 60.0,
 			"other":"other data",
 		},
+		Address: "1234567",
 		CreatedTs: date.DateNowSecond(),
 	}
 	if err := h.Insert(dbName, tName, data); err!=nil{
@@ -53,6 +55,7 @@ func TestMongoDBHandler(t *testing.T){
 	t.Log(fmt.Sprintf("Find result: %v\n", result))
 
 	data.Age++
+	data.Address = ""
 	numUpsert, err := h.Upsert(dbName, tName, db.BsonM{
 		"_id":data.ID,
 	}, data)

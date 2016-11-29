@@ -67,7 +67,10 @@ func (h *MongoDBHandler)ToObjectID(id string)bson.ObjectId{
 }
 
 func (h *MongoDBHandler)EnsureIndex(db, cName string, unique, dropDups, background, sparse bool, keys ...string) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.EnsureIndex(mgo.Index{
 		Key: keys,
 		Unique: unique,
@@ -78,12 +81,18 @@ func (h *MongoDBHandler)EnsureIndex(db, cName string, unique, dropDups, backgrou
 }
 
 func (h *MongoDBHandler)DropIndex(db, cName string, keys ...string) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.DropIndex(keys...)
 }
 
 func (h *MongoDBHandler)Indexes(db, cName string)([]map[string]interface{}, error){
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	indexes, err := c.Indexes()
 	if err != nil{
 		return nil, err
@@ -97,55 +106,85 @@ func (h *MongoDBHandler)Indexes(db, cName string)([]map[string]interface{}, erro
 	return m, nil
 }
 
-func (h *MongoDBHandler)find(db, cName string, selector BsonM) (*mgo.Query){
-	c := h.se.DB(db).C(cName)
-	return c.Find(selector)
-}
-
-func (h *MongoDBHandler)findByID(db, cName string, id string) (*mgo.Query){
-	c := h.se.DB(db).C(cName)
-	return c.FindId(bson.ObjectIdHex(id))
-}
-
 func (h *MongoDBHandler)FindAll(db, cName string, offset, limit int, sort []string, results interface{}) error{
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	if len(sort) != 0{
-		return h.find(db, cName, nil).Sort(sort...).Skip(offset).Limit(limit).All(results)
+		return c.Find( nil).Sort(sort...).Skip(offset).Limit(limit).All(results)
 	}
-	return h.find(db, cName, nil).Skip(offset).Limit(limit).All(results)
+	return c.Find(nil).Skip(offset).Limit(limit).All(results)
 }
 
 func (h *MongoDBHandler)FindOne(db, cName string, selector BsonM, offset, limit int, sort []string, result interface{}) error{
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	if len(sort) != 0{
-		return h.find(db, cName, selector).Sort(sort...).Skip(offset).Limit(limit).One(result)
+		return c.Find(selector).Sort(sort...).Skip(offset).Limit(limit).One(result)
 	}
-	return h.find(db, cName, selector).Skip(offset).Limit(limit).One(result)
+	return c.Find(selector).Skip(offset).Limit(limit).One(result)
 }
 
 func (h *MongoDBHandler)Find(db, cName string, selector BsonM, result interface{}) error{
-	return h.find(db, cName, selector).One(result)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	return c.Find(selector).One(result)
 }
 
 func (h *MongoDBHandler)FindByID(db, cName, id string, result interface{}) error{
-	return h.findByID(db, cName, id).One(result)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	return c.FindId(bson.ObjectIdHex(id)).One(result)
+}
+
+func (h *MongoDBHandler)CountByID(db, cName, id string) (int, error){
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	cnt, err := c.FindId(bson.ObjectIdHex(id)).Count()
+	if err != nil{
+		return 0, err
+	}
+	return cnt, nil
 }
 
 func (h *MongoDBHandler)Insert(db, cName string, cObjects...interface{}) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.Insert(cObjects...)
 }
 
 func (h *MongoDBHandler)Update(db, cName string, selector BsonM, cObject interface{}) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.Update(selector, cObject)
 }
 
 func (h *MongoDBHandler)UpdateByID(db, cName, id string, cObject interface{}) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.UpdateId(bson.ObjectIdHex(id), cObject)
 }
 
 func (h *MongoDBHandler)Upsert(db, cName string, selector BsonM, cObject interface{}) (int, error){
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	info, err := c.Upsert(selector, cObject)
 	if err != nil{
 		return 0, err
@@ -153,22 +192,31 @@ func (h *MongoDBHandler)Upsert(db, cName string, selector BsonM, cObject interfa
 	return info.Matched, nil
 }
 
-func (h *MongoDBHandler)UpsertedId(db, cName, id string, cObject interface{})(string, error){
-	c := h.se.DB(db).C(cName)
+func (h *MongoDBHandler)UpsertedId(db, cName, id string, cObject interface{})(int, error){
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	info, err := c.UpsertId(bson.ObjectIdHex(id), cObject)
 	if err != nil{
-		return "", err
+		return 0, err
 	}
 	return info.Matched, nil
 }
 
 func (h *MongoDBHandler)Remove(db, cName string, selector BsonM) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.Remove(selector)
 }
 
 func (h *MongoDBHandler)RemoveAll(db, cName string, selector BsonM) (int, error){
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	info, err := c.RemoveAll(selector)
 	if err != nil{
 		return 0, err
@@ -177,6 +225,9 @@ func (h *MongoDBHandler)RemoveAll(db, cName string, selector BsonM) (int, error)
 }
 
 func (h *MongoDBHandler)RemoveByID(db, cName, id string) error{
-	c := h.se.DB(db).C(cName)
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
 	return c.RemoveId(bson.ObjectIdHex(id))
 }
