@@ -90,3 +90,26 @@ func HTTPParseURL(srcURL string, params map[string][]string) (string, error) {
 	u.RawQuery = p.Encode()
 	return u.String(), nil
 }
+
+// FormPost do a HTTP POST with x-www-form-urlencoded body
+func FormPost(url string, bodyData []byte) ([]byte, error) {
+	b := bytes.NewReader(bodyData)
+	req, err := http.NewRequest("POST", url, b)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	client := &http.Client{}
+	res, err := client.Do(req)
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != 200 && res.StatusCode != 202 {
+		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, res.StatusCode)
+	}
+
+	return ioutil.ReadAll(res.Body)
+}
