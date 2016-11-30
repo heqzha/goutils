@@ -62,8 +62,8 @@ func PGConfig(engine *PGEngine,
 	engine.dsn = dsn
 	engine.SetMaxOpenConns(100)
 	engine.SetMaxIdleConns(50)
-	engine.Logger().SetLevel(level)
-	engine.ShowSQL(showSQL)
+	engine.Logger.SetLevel(level)
+	engine.ShowSQL = showSQL
 
 	if err = engine.Ping(); err != nil {
 		engine.Status = false
