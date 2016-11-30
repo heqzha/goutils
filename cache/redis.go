@@ -1,31 +1,30 @@
 package cache
 
-import(
-	"time"
+import (
 	"gopkg.in/redis.v3"
+	"time"
 )
 
-var(
+var (
 	redisCli *redis.Client
 )
 
-func RedisConfig(address, password string, db int64) error{
+func RedisConfig(address, password string, db int64) error {
 	redisCli = redis.NewClient(&redis.Options{
-		Addr: address,
+		Addr:     address,
 		Password: password,
-		DB: db,
+		DB:       db,
 	})
 
 	return redisCli.Ping().Err()
 }
 
-func RedisExists(key string)(bool, error){
+func RedisExists(key string) (bool, error) {
 	return redisCli.Exists(key).Result()
 }
 
-
-func RedisExpire(key string, exp time.Duration) error{
-	if exp > 0{
+func RedisExpire(key string, exp time.Duration) error {
+	if exp > 0 {
 		return redisCli.Expire(key, exp).Err()
 	}
 	return nil
@@ -35,15 +34,15 @@ func RedisDel(keys ...string) error {
 	return redisCli.Del(keys...).Err()
 }
 
-func RedisSet(key, value string) error{
+func RedisSet(key, value string) error {
 	return RedisSetWithExp(key, 0, value)
 }
 
-func RedisSetWithExp(key string, exp time.Duration, value string) error{
+func RedisSetWithExp(key string, exp time.Duration, value string) error {
 	return redisCli.Set(key, value, exp).Err()
 }
 
-func RedisGet(key string)(string, error){
+func RedisGet(key string) (string, error) {
 	value, err := redisCli.Get(key).Result()
 	if err == redis.Nil {
 		//key does not exist
@@ -58,11 +57,11 @@ func RedisGet(key string)(string, error){
 // Redis List //
 ////////////////
 
-func RedisLPush(key string, values ...string) error{
+func RedisLPush(key string, values ...string) error {
 	return RedisLPushWithExp(key, 0, values...)
 }
 
-func RedisLPushWithExp(key string, exp time.Duration, values ...string) error{
+func RedisLPushWithExp(key string, exp time.Duration, values ...string) error {
 	err := redisCli.LPush(key, values...).Err()
 	if err != nil {
 		return err
@@ -70,19 +69,19 @@ func RedisLPushWithExp(key string, exp time.Duration, values ...string) error{
 	return RedisExpire(key, exp)
 }
 
-func RedisRPush(key string, values ...string) error{
+func RedisRPush(key string, values ...string) error {
 	return RedisRPushWithExp(key, 0, values...)
 }
 
-func RedisRPushWithExp(key string, exp time.Duration, values ...string) error{
+func RedisRPushWithExp(key string, exp time.Duration, values ...string) error {
 	err := redisCli.RPush(key, values...).Err()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return RedisExpire(key, exp)
 }
 
-func RedisLRangeAll(key string)([]string, error){
+func RedisLRangeAll(key string) ([]string, error) {
 	length, err := redisCli.LLen(key).Result()
 	if err != nil {
 		return nil, err
@@ -99,19 +98,19 @@ func RedisLRem(key string, count int64, value string) error {
 // Redis Hashes //
 //////////////////
 
-func RedisHSet(key, field, value string) error{
+func RedisHSet(key, field, value string) error {
 	return RedisHSetWithExp(key, 0, field, value)
 }
 
-func RedisHSetWithExp(key string, exp time.Duration, field, value string) error{
+func RedisHSetWithExp(key string, exp time.Duration, field, value string) error {
 	err := redisCli.HSet(key, field, value).Err()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return RedisExpire(key, exp)
 }
 
-func RedisHGet(key, field string) (string, error){
+func RedisHGet(key, field string) (string, error) {
 	value, err := redisCli.HGet(key, field).Result()
 	if err == redis.Nil {
 		//key does not exist
@@ -122,7 +121,7 @@ func RedisHGet(key, field string) (string, error){
 	return value, nil
 }
 
-func RedisHGetAll(key string)([]string, error){
+func RedisHGetAll(key string) ([]string, error) {
 	values, err := redisCli.HGetAll(key).Result()
 	if err == redis.Nil {
 		//key does not exist
@@ -136,7 +135,6 @@ func RedisHGetAll(key string)([]string, error){
 func RedisHExists(key, field string) (bool, error) {
 	return redisCli.HExists(key, field).Result()
 }
-
 
 func RedisHSetMap(key string, values map[string]string) error {
 	return RedisHSetMapWithExp(key, 0, values)
@@ -168,19 +166,19 @@ func RedisHLen(key string) (int64, error) {
 // Redis Sets //
 ////////////////
 
-func RedisSAdd(key string, values ...string) error{
+func RedisSAdd(key string, values ...string) error {
 	return RedisSAddWithExp(key, 0, values...)
 }
 
-func RedisSAddWithExp(key string, exp time.Duration, values ...string) error{
+func RedisSAddWithExp(key string, exp time.Duration, values ...string) error {
 	err := redisCli.SAdd(key, values...).Err()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return RedisExpire(key, exp)
 }
 
-func RedisSMembers(key string) ([]string, error){
+func RedisSMembers(key string) ([]string, error) {
 	return redisCli.SMembers(key).Result()
 }
 
@@ -188,60 +186,60 @@ func RedisSMembers(key string) ([]string, error){
 // Redis Sorted Sets //
 ///////////////////////
 
-func RedisZAdd(key, value string, score float64)error{
+func RedisZAdd(key, value string, score float64) error {
 	return RedisZAddWithExp(key, 0, value, score)
 }
 
-func RedisZAddWithExp(key string, exp time.Duration, value string, score float64) error{
+func RedisZAddWithExp(key string, exp time.Duration, value string, score float64) error {
 	z := redis.Z{
-		Score: score,
+		Score:  score,
 		Member: value,
 	}
 	err := redisCli.ZAdd(key, z).Err()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return RedisExpire(key, exp)
 }
 
-func RedisZAddList(key string, values ...redis.Z) error{
+func RedisZAddList(key string, values ...redis.Z) error {
 	return RedisZAddListWithExp(key, 0, values...)
 }
 
-func RedisZAddListWithExp(key string, exp time.Duration, values ...redis.Z)error{
-	if err := redisCli.ZAdd(key, values...).Err(); err != nil{
+func RedisZAddListWithExp(key string, exp time.Duration, values ...redis.Z) error {
+	if err := redisCli.ZAdd(key, values...).Err(); err != nil {
 		return err
 	}
 	return RedisExpire(key, exp)
 }
 
-func RedisZIncr1(key, value string) error{
+func RedisZIncr1(key, value string) error {
 	return redisCli.ZIncrBy(key, 1.0, value).Err()
 }
 
-func RedisZCount(key, min, max string) (int64, error){
+func RedisZCount(key, min, max string) (int64, error) {
 	return redisCli.ZCount(key, min, max).Result()
 }
 
-func RedisZCountAll(key string)(int64, error){
+func RedisZCountAll(key string) (int64, error) {
 	return RedisZCount(key, "-inf", "+inf")
 }
 
-func RedisZDecsLimit(key string, offset, count int64)([]string, error){
+func RedisZDecsLimit(key string, offset, count int64) ([]string, error) {
 	return RedisZRevRangeByScore(key, "-inf", "+inf", offset, count)
 }
 
-func RedisZRevRangeByScore(key, min, max string, offset, count int64)([]string, error){
+func RedisZRevRangeByScore(key, min, max string, offset, count int64) ([]string, error) {
 	opt := redis.ZRangeByScore{
 		Min: min,
 		Max: max,
 	}
 
-	if offset > 0{
+	if offset > 0 {
 		opt.Offset = offset
 	}
 
-	if count > 0{
+	if count > 0 {
 		opt.Count = count
 	}
 	return redisCli.ZRevRangeByScore(key, opt).Result()

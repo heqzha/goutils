@@ -1,6 +1,6 @@
 package concurrency
 
-import(
+import (
 	"log"
 	"time"
 )

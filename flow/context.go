@@ -40,7 +40,7 @@ func (c *Context) Init(params Params, l *Line) {
 	c.line.do(c.index, c)
 }
 
-func (c *Context) Start(){
+func (c *Context) Start() {
 	go c.line.start()
 }
 
@@ -98,7 +98,7 @@ func (c *Context) Repeat() {
 
 //Jump should be used only inside middleware.
 // It jump to process i, but keeps all parameters
-func (c *Context) Jump(i int){
+func (c *Context) Jump(i int) {
 	if !c.IsAborted() {
 		c.index = i
 		c.line.do(c.index, c)

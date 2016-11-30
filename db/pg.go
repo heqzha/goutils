@@ -3,15 +3,15 @@ package db
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
-	"log"
-	"strings"
-	"strconv"
 
-	ccc "github.com/heqzha/goutils/concurrency"
 	xormcore "github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
+	ccc "github.com/heqzha/goutils/concurrency"
 	_ "github.com/lib/pq"
 )
 
@@ -31,7 +31,7 @@ type PGEngine struct {
 }
 
 func PGConfig(engine *PGEngine,
-	user, password,	dbName,	host,	port string, ssl bool,
+	user, password, dbName, host, port string, ssl bool,
 	level xormcore.LogLevel, showSQL bool) error {
 	var err error
 
@@ -74,7 +74,7 @@ func PGConfig(engine *PGEngine,
 }
 
 func PGRunCheckMasterStatus(interval time.Duration) {
-	ccc.TaskRunPeriodic(func() time.Duration{
+	ccc.TaskRunPeriodic(func() time.Duration {
 		pgCheckDBEngineStatus(pgEngineMaster)
 		return interval
 	}, "PGRunCheckMasterStatus", interval*time.Second)
