@@ -232,7 +232,7 @@ func (h *MongoDBHandler) RemoveByID(db, cName, id string) error {
 	return c.RemoveId(bson.ObjectIdHex(id))
 }
 
-func (h *MongoDBHandler) findAndModify(cmd, db, cName, id string, updater bson.M, result interface{}) error {
+func (h *MongoDBHandler) findAndModifyByID(cmd, db, cName, id string, updater BsonM, result interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -245,10 +245,31 @@ func (h *MongoDBHandler) findAndModify(cmd, db, cName, id string, updater bson.M
 	return err
 }
 
+func (h *MongoDBHandler) findAndModify(cmd, db, cName string, selector BsonM, updater BsonM, result interface{}) error {
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	change := mgo.Change{
+		Update:    bson.M{cmd: updater},
+		ReturnNew: true,
+	}
+	_, err := c.Find(selector).Apply(change, result)
+	return err
+}
+
+func (h *MongoDBHandler) Inc(db, cName string, selector BsonM, key string, value int, result interface{}) error {
+	return h.findAndModify("$inc", db, cName, selector, BsonM{key: value}, result)
+}
+
+func (h *MongoDBHandler) Set(db, cName string, selector BsonM, key string, value interface{}, result interface{}) error {
+	return h.findAndModify("$set", db, cName, selector, BsonM{key: value}, result)
+}
+
 func (h *MongoDBHandler) IncByID(db, cName, id, key string, value int, result interface{}) error {
-	return h.findAndModify("$inc", db, cName, id, bson.M{key: value}, result)
+	return h.findAndModifyByID("$inc", db, cName, id, BsonM{key: value}, result)
 }
 
 func (h *MongoDBHandler) SetByID(db, cName, id, key string, value interface{}, result interface{}) error {
-	return h.findAndModify("$set", db, cName, id, bson.M{key: value}, result)
+	return h.findAndModifyByID("$set", db, cName, id, BsonM{key: value}, result)
 }

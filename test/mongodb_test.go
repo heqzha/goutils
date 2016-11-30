@@ -72,17 +72,34 @@ func TestMongoDBHandler(t *testing.T) {
 		return
 	}
 	result = ATestData{}
-	if err := h.IncByID(dbName, tName, data.ID, "age", -1, &result); err != nil {
+	if err := h.Inc(dbName, tName, db.BsonM{
+		"_id": data.ID,
+	}, "age", 1, &result); err != nil {
 		t.Error(err.Error())
 		return
 	}
 	t.Log(fmt.Sprintf("Inc result: %v\n", result))
+
+	if err := h.IncByID(dbName, tName, data.ID, "age", -1, &result); err != nil {
+		t.Error(err.Error())
+		return
+	}
+	t.Log(fmt.Sprintf("IncByID result: %v\n", result))
+
 	result = ATestData{}
-	if err := h.SetByID(dbName, tName, data.ID, "data.sex", false, &result); err != nil {
+	if err := h.Set(dbName, tName, db.BsonM{
+		"_id": data.ID,
+	}, "data.other", "aaaa", &result); err != nil {
 		t.Error(err.Error())
 		return
 	}
 	t.Log(fmt.Sprintf("Set result: %v\n", result))
+
+	if err := h.SetByID(dbName, tName, data.ID, "data.sex", false, &result); err != nil {
+		t.Error(err.Error())
+		return
+	}
+	t.Log(fmt.Sprintf("SetByID result: %v\n", result))
 
 	if err := h.EnsureIndex(dbName, tName, false, false, false, false, "name", "age"); err != nil {
 		t.Error(err.Error())
