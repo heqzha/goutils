@@ -101,6 +101,15 @@ func TestMongoDBHandler(t *testing.T) {
 	}
 	t.Log(fmt.Sprintf("SetByID result: %v\n", result))
 
+	exist, err := h.Exist(dbName, tName, db.BsonM{
+		"_id": data.ID,
+	})
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+	t.Log(fmt.Sprintf("Exist result: %v\n", exist))
+
 	if err := h.EnsureIndex(dbName, tName, false, false, false, false, "name", "age"); err != nil {
 		t.Error(err.Error())
 		return

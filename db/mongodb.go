@@ -136,6 +136,20 @@ func (h *MongoDBHandler) Find(db, cName string, selector BsonM, result interface
 	return c.Find(selector).One(result)
 }
 
+func (h *MongoDBHandler) Exist(db, cName string, selector BsonM) (bool, error) {
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	cnt, err := c.Find(selector).Count()
+	if err != nil {
+		return false, err
+	} else if cnt > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (h *MongoDBHandler) FindByID(db, cName, id string, result interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
@@ -149,11 +163,7 @@ func (h *MongoDBHandler) CountByID(db, cName, id string) (int, error) {
 	defer se.Close()
 	c := se.DB(db).C(cName)
 
-	cnt, err := c.FindId(bson.ObjectIdHex(id).Hex()).Count()
-	if err != nil {
-		return 0, err
-	}
-	return cnt, nil
+	return c.FindId(bson.ObjectIdHex(id).Hex()).Count()
 }
 
 func (h *MongoDBHandler) Insert(db, cName string, cObjects ...interface{}) error {
