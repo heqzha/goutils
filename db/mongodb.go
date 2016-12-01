@@ -187,7 +187,7 @@ func (h *MongoDBHandler) UpdateByID(db, cName, id string, cObject interface{}) e
 	defer se.Close()
 	c := se.DB(db).C(cName)
 
-	return c.UpdateId(bson.ObjectIdHex(id), cObject)
+	return c.UpdateId(bson.ObjectIdHex(id).Hex(), cObject)
 }
 
 func (h *MongoDBHandler) Upsert(db, cName string, selector BsonM, cObject interface{}) (int, error) {
@@ -207,7 +207,7 @@ func (h *MongoDBHandler) UpsertedId(db, cName, id string, cObject interface{}) (
 	defer se.Close()
 	c := se.DB(db).C(cName)
 
-	info, err := c.UpsertId(bson.ObjectIdHex(id), cObject)
+	info, err := c.UpsertId(bson.ObjectIdHex(id).Hex(), cObject)
 	if err != nil {
 		return 0, err
 	}
@@ -239,7 +239,7 @@ func (h *MongoDBHandler) RemoveByID(db, cName, id string) error {
 	defer se.Close()
 	c := se.DB(db).C(cName)
 
-	return c.RemoveId(bson.ObjectIdHex(id))
+	return c.RemoveId(bson.ObjectIdHex(id).Hex())
 }
 
 func (h *MongoDBHandler) findAndModifyByID(cmd, db, cName, id string, updater BsonM, result interface{}) error {
