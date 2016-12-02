@@ -43,3 +43,19 @@ func LBWilsonScoreWithBernoulliParam(positive int64, all int64, confidence float
 	phat := 1.0 * fPos / fAll
 	return (phat + z*z/(2.0*fAll) - z*math.Sqrt((phat*(1-phat)+z*z/(4*fAll))/fAll)) / (1 + z*z/fAll)
 }
+
+/////////////////////
+// Reddit Hot Rank //
+/////////////////////
+func RedditHotRankScore(ups int64, downs int64, now int64) float64 {
+	s := float64(ups - downs)
+	order := math.Log10(math.Max(math.Abs(s), 1.0))
+	sign := 0.0
+	if s > 0 {
+		sign = 1
+	} else if sign < 0 {
+		sign = -1
+	}
+	seconds := float64(now - 1134028003)
+	return order + sign*seconds/45000.0
+}
