@@ -114,7 +114,10 @@ func (h *MongoDBHandler) FindAll(db, cName string, selector BsonM, offset, limit
 	if len(sort) != 0 {
 		return c.Find(selector).Sort(sort...).Skip(offset).Limit(limit).All(results)
 	}
-	return c.Find(selector).Skip(offset).Limit(limit).All(results)
+	if limit > 0{
+		return c.Find(selector).Skip(offset).Limit(limit).All(results)
+	}
+	return c.Find(selector).Skip(offset).All(results)
 }
 
 func (h *MongoDBHandler) FindOne(db, cName string, selector BsonM, offset, limit int, sort []string, result interface{}) error {

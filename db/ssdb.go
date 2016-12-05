@@ -316,6 +316,24 @@ func (h *SSDBHandler) ZSetWithExp(key string, exp time.Duration, field string, s
 	return h.Expire(key, exp)
 }
 
+func (h *SSDBHandler) ZMultiSet(key string, fieldScore map[string]int64) error{
+	return h.ZMultiSetWithExp(key, 0, fieldScore)
+}
+
+func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore map[string]int64) error{
+	cli, err := h.newClient()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	err = cli.MultiZset(key, fieldScore)
+	if err != nil{
+		return err
+	}
+	return h.Expire(key, exp)
+}
+
 func (h *SSDBHandler) ZGet(key, field string) (int64, error) {
 	cli, err := h.newClient()
 	if err != nil {
@@ -326,8 +344,23 @@ func (h *SSDBHandler) ZGet(key, field string) (int64, error) {
 	return cli.Zget(key, field)
 }
 
+//+inf -> -inf
 func (h *SSDBHandler) ZTopX(key, keyStart string, start, limit int64) ([]string, []int64, error) {
 	return h.ZRScan(key, keyStart, start, "", limit)
+}
+
+//-inf -> +inf
+func (h *SSDBHandler) ZRankX(key, keyStart string, start, limit int64) ([]string, []int64, error) {
+	return h.ZScan(key, keyStart, start, "", limit)
+}
+
+func (h *SSDBHandler) ZScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error) {
+	cli, err := h.newClient()
+	if err != nil {
+		return nil, nil, err
+	}
+	defer cli.Close()
+	return cli.Zscan(key, fieldStart, start, end, limit)
 }
 
 func (h *SSDBHandler) ZRScan(key, fieldStart string, start, end interface{}, limit int64) (keys []string, scores []int64, err error) {
@@ -357,4 +390,14 @@ func (h *SSDBHandler) ZDel(key, field string) error {
 	defer cli.Close()
 
 	return cli.Zdel(key, field)
+}
+
+func (h *SSDBHandler) ZClear(key string) error{
+	cli, err := h.newClient()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	return cli.Zclear(key)
 }

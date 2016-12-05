@@ -105,6 +105,31 @@ func (c *Context) Jump(i int) {
 	}
 }
 
+func (c *Context) JumpToEnd() {
+	if !c.IsAborted() {
+		c.index = c.line.size() - 1
+		c.line.do(c.index, c)
+	}
+}
+
+// Pass should be used only inside middleware.
+// It passes a copy of Context to the next handler
+// and keeps the context for current handler
+func (c *Context) Pass() {
+	if !c.IsAborted() {
+		cp := c.Copy()
+		cp.index = c.index
+		cp.line = c.line
+		n, end := cp.line.next(int(cp.index))
+		if end {
+			// Reach the end of line
+			cp.Abort()
+			return
+		}
+		n.in(cp)
+	}
+}
+
 // IsAborted returns true if the currect context was aborted.
 func (c *Context) IsAborted() bool {
 	return c.index >= abortIndex
