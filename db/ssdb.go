@@ -316,11 +316,11 @@ func (h *SSDBHandler) ZSetWithExp(key string, exp time.Duration, field string, s
 	return h.Expire(key, exp)
 }
 
-func (h *SSDBHandler) ZMultiSet(key string, fieldScore map[string]int64) error{
+func (h *SSDBHandler) ZMultiSet(key string, fieldScore map[string]int64) error {
 	return h.ZMultiSetWithExp(key, 0, fieldScore)
 }
 
-func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore map[string]int64) error{
+func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore map[string]int64) error {
 	cli, err := h.newClient()
 	if err != nil {
 		return err
@@ -328,7 +328,7 @@ func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore
 	defer cli.Close()
 
 	err = cli.MultiZset(key, fieldScore)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return h.Expire(key, exp)
@@ -392,7 +392,7 @@ func (h *SSDBHandler) ZDel(key, field string) error {
 	return cli.Zdel(key, field)
 }
 
-func (h *SSDBHandler) ZClear(key string) error{
+func (h *SSDBHandler) ZClear(key string) error {
 	cli, err := h.newClient()
 	if err != nil {
 		return err
