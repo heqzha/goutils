@@ -169,6 +169,14 @@ func (h *MongoDBHandler) CountByID(db, cName, id string) (int, error) {
 	return c.FindId(bson.ObjectIdHex(id).Hex()).Count()
 }
 
+func (h *MongoDBHandler) Count(db, cName, selector BsonM) (int, error){
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	return c.Find(selector).Count()
+}
+
 func (h *MongoDBHandler) Insert(db, cName string, cObjects ...interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
