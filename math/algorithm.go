@@ -52,9 +52,9 @@ func RedditHotRankScore(ups int64, downs int64, now int64) float64 {
 	order := math.Log10(math.Max(math.Abs(s), 1.0))
 	sign := 0.0
 	if s > 0 {
-		sign = 1
-	} else if sign < 0 {
-		sign = -1
+		sign = 1.0
+	} else if s < 0 {
+		sign = -1.0
 	}
 	seconds := float64(now - 1134028003)
 	return order + sign*seconds/45000.0
