@@ -12,6 +12,7 @@ func GetFuncName(f interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 }
 
+//Caution: RunFunc is very slow!!!
 func RunFunc(f interface{}, args ...interface{}) []interface{} {
 	fValue := reflect.ValueOf(f)
 	fType := fValue.Type()
