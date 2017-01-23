@@ -177,6 +177,14 @@ func (h *MongoDBHandler) Count(db, cName string, selector BsonM) (int, error){
 	return c.Find(selector).Count()
 }
 
+func (h *MongoDBHandler) Distinct(db, cName, key string, selector BsonM, results interface{}) error{
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	return c.Find(selector).Distinct(key, results)
+}
+
 func (h *MongoDBHandler) Insert(db, cName string, cObjects ...interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
