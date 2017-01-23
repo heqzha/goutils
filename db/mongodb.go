@@ -169,7 +169,7 @@ func (h *MongoDBHandler) CountByID(db, cName, id string) (int, error) {
 	return c.FindId(bson.ObjectIdHex(id).Hex()).Count()
 }
 
-func (h *MongoDBHandler) Count(db, cName string, selector BsonM) (int, error){
+func (h *MongoDBHandler) Count(db, cName string, selector BsonM) (int, error) {
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -177,7 +177,7 @@ func (h *MongoDBHandler) Count(db, cName string, selector BsonM) (int, error){
 	return c.Find(selector).Count()
 }
 
-func (h *MongoDBHandler) Distinct(db, cName, key string, selector BsonM, results interface{}) error{
+func (h *MongoDBHandler) Distinct(db, cName, key string, selector BsonM, results interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)

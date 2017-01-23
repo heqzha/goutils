@@ -47,15 +47,15 @@ func DateUnixByLocation(date string, location string) int64 {
 	return t.Unix()
 }
 
-func UnixMilli(t time.Time) int64{
+func UnixMilli(t time.Time) int64 {
 	return t.UnixNano() / int64(time.Millisecond/time.Nanosecond)
 }
 
-func Today() time.Time{
+func Today() time.Time {
 	return time.Now().Round(time.Hour * 24)
 }
 
-func Yesterday() time.Time{
+func Yesterday() time.Time {
 	now := time.Now()
 	diff := now.Add(-time.Hour * 24)
 	return diff.Round(time.Hour * 24)
