@@ -51,12 +51,17 @@ func UnixMilli(t time.Time) int64 {
 	return t.UnixNano() / int64(time.Millisecond/time.Nanosecond)
 }
 
+func BeginOfDate(t time.Time) time.Time{
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
 func Today() time.Time {
-	return time.Now().Round(time.Hour * 24)
+	now := time.Now()
+	return BeginOfDate(now)
 }
 
 func Yesterday() time.Time {
 	now := time.Now()
 	diff := now.Add(-time.Hour * 24)
-	return diff.Round(time.Hour * 24)
+	return BeginOfDate(diff)
 }
