@@ -20,9 +20,13 @@ func RunFunc(f interface{}, args ...interface{}) []interface{} {
 	inValues := []reflect.Value{}
 	for idx, arg := range args {
 		argValue := reflect.ValueOf(arg)
-		argType := argValue.Type()
-		if !argType.ConvertibleTo(fType.In(idx)) {
-			panic(fmt.Sprintf("function %s require %s, but get %s", fName, fType.In(idx).Name(), argType.Name()))
+		if argValue.IsValid(){
+			argType := argValue.Type()
+			if !argType.ConvertibleTo(fType.In(idx)) {
+				panic(fmt.Sprintf("function %s require %s, but get %s", fName, fType.In(idx).Name(), argType.Name()))
+			}
+		}else {
+			argValue = reflect.Zero(fType.In(idx))
 		}
 		inValues = append(inValues, argValue)
 	}
@@ -37,6 +41,6 @@ func RunFunc(f interface{}, args ...interface{}) []interface{} {
 
 func PrintTimeCost(f interface{}, args ...interface{}) []interface{} {
 	now := time.Now()
-	defer fmt.Printf("%s cost %s\n", GetFuncName(f), date.DateDurationFrom(now))
+	defer fmt.Printf("%s:%v  cost %s\n", GetFuncName(f), args, date.DateDurationFrom(now))
 	return RunFunc(f, args...)
 }
