@@ -302,3 +302,14 @@ func (h *MongoDBHandler) IncByID(db, cName, id, key string, value int, result in
 func (h *MongoDBHandler) SetByID(db, cName, id, key string, value interface{}, result interface{}) error {
 	return h.findAndModifyByID("$set", db, cName, id, BsonM{key: value}, result)
 }
+
+func (h *MongoDBHandler) Pipe(db, cName string, selectors []BsonM, results interface{}) error {
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	if err := c.Pipe(selectors).All(results); err != nil {
+		return err
+	}
+	return nil
+}
