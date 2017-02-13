@@ -51,7 +51,7 @@ func UnixMilli(t time.Time) int64 {
 	return t.UnixNano() / int64(time.Millisecond/time.Nanosecond)
 }
 
-func BeginOfDate(t time.Time) time.Time{
+func BeginOfDate(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
