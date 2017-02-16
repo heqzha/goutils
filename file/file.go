@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 func Mv(src, dst string) error {
@@ -28,6 +29,15 @@ func MkPath(path string, perm os.FileMode) error {
 		return os.MkdirAll(path, perm)
 	}
 	return nil
+}
+
+func GetPath(file string) (string, error) {
+	abs, err := filepath.Abs(file)
+	if err != nil {
+		return "", err
+	}
+	base := filepath.Base(abs)
+	return abs[:len(abs)-len(base)-1], nil
 }
 
 func GetFilesList(path string) ([]string, error) {
