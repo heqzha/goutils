@@ -10,8 +10,9 @@ import (
 )
 
 type MongoDBHandler struct {
-	se  *mgo.Session
-	url string
+	se          *mgo.Session
+	url         string
+	ErrNotFound error
 }
 
 type BsonM bson.M
@@ -34,8 +35,9 @@ func MongoDBNewHandler(username, password, db string, url ...string) (*MongoDBHa
 		return nil, err
 	}
 	return &MongoDBHandler{
-		se:  se,
-		url: furl,
+		se:          se,
+		url:         furl,
+		ErrNotFound: mgo.ErrNotFound,
 	}, nil
 }
 
