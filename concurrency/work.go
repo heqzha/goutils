@@ -13,6 +13,13 @@ type WorkQueue struct {
 	maxLength int
 }
 
+func newWorkQueue(max int) *WorkQueue {
+	return &WorkQueue{
+		q:         make(chan WorkRequest, max),
+		maxLength: max,
+	}
+}
+
 func (w *WorkQueue) push(work WorkRequest) error {
 	if len(w.q) >= w.maxLength {
 		return fmt.Errorf("WorkQueue is full, cannot add more works.")
@@ -38,14 +45,14 @@ type WorkRequest struct {
 
 type Worker struct {
 	ID   int
-	Work chan WorkRequest
+	Work *WorkQueue
 	Quit chan bool
 }
 
-func newWorker(id int) Worker {
+func newWorker(id int, max int) Worker {
 	worker := Worker{
 		ID:   id,
-		Work: make(chan WorkRequest),
+		Work: newWorkQueue(max),
 		Quit: make(chan bool),
 	}
 	return worker
@@ -55,7 +62,7 @@ func (w *Worker) Start() {
 	go func() {
 		for {
 			select {
-			case work := <-w.Work:
+			case work := <-w.Work.q:
 				//Work
 				if work.output != nil {
 					work.output <- work.f(work.params)
@@ -83,13 +90,6 @@ type WorkersPool struct {
 	mutex *sync.Mutex
 }
 
-func newWorkQueue(max int) *WorkQueue {
-	return &WorkQueue{
-		q:         make(chan WorkRequest, max),
-		maxLength: max,
-	}
-}
-
 func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
 	wp.Clear()
 	wp.Quit = make(chan bool)
@@ -97,7 +97,7 @@ func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
 	wp.mutex = &sync.Mutex{}
 
 	for i := 0; i < nWorkers; i++ {
-		worker := newWorker(i)
+		worker := newWorker(i, maxBuffer)
 		worker.Start()
 		wp.Push(&worker)
 	}
@@ -109,7 +109,7 @@ func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
 				go func() {
 					wp.mutex.Lock()
 					worker := wp.Pop().(*Worker)
-					worker.Work <- work
+					worker.Work.q <- work
 					wp.Push(worker)
 					wp.mutex.Unlock()
 				}()
