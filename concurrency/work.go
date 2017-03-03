@@ -43,17 +43,27 @@ type WorkRequest struct {
 	output chan interface{}
 }
 
+const (
+	WorkerStateIdle = 0
+	WorkerStateBusy = 1
+	WorkerStateQuit = 2
+)
+
 type Worker struct {
-	ID   int
-	Work *WorkQueue
-	Quit chan bool
+	ID     int
+	Work   *WorkQueue
+	Status int
+	Quit   chan bool
+	mutex  *sync.RWMutex
 }
 
-func newWorker(id int, max int) Worker {
+func newWorker(id int) Worker {
 	worker := Worker{
-		ID:   id,
-		Work: newWorkQueue(max),
-		Quit: make(chan bool),
+		ID:     id,
+		Work:   newWorkQueue(1),
+		Status: WorkerStateIdle,
+		Quit:   make(chan bool),
+		mutex:  &sync.RWMutex{},
 	}
 	return worker
 }
@@ -63,14 +73,17 @@ func (w *Worker) Start() {
 		for {
 			select {
 			case work := <-w.Work.q:
+				w.Busy()
 				//Work
 				if work.output != nil {
 					work.output <- work.f(work.params)
 				} else {
 					work.f(work.params)
 				}
+				w.Idle()
 				time.Sleep(work.delay)
 			case <-w.Quit:
+				w.Unavailable()
 				return
 			}
 		}
@@ -81,6 +94,30 @@ func (w *Worker) Stop() {
 	go func() {
 		w.Quit <- true
 	}()
+}
+
+func (w *Worker) Unavailable() {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	w.Status = WorkerStateQuit
+}
+
+func (w *Worker) Busy() {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	w.Status = WorkerStateBusy
+}
+
+func (w *Worker) Idle() {
+	w.mutex.Lock()
+	defer w.mutex.Unlock()
+	w.Status = WorkerStateIdle
+}
+
+func (w *Worker) IsAvailable() bool {
+	w.mutex.RLock()
+	defer w.mutex.RUnlock()
+	return w.Status == WorkerStateIdle
 }
 
 type WorkersPool struct {
@@ -97,7 +134,7 @@ func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
 	wp.mutex = &sync.Mutex{}
 
 	for i := 0; i < nWorkers; i++ {
-		worker := newWorker(i, maxBuffer)
+		worker := newWorker(i)
 		worker.Start()
 		wp.Push(&worker)
 	}
@@ -109,7 +146,12 @@ func (wp *WorkersPool) Start(nWorkers int, maxBuffer int) {
 				go func() {
 					wp.mutex.Lock()
 					worker := wp.Pop().(*Worker)
-					worker.Work.q <- work
+					if worker.IsAvailable() {
+						worker.Work.q <- work
+					} else {
+						time.Sleep(time.Millisecond * 50)
+						wp.workQ.push(work)
+					}
 					wp.Push(worker)
 					wp.mutex.Unlock()
 				}()
