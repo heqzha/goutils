@@ -65,3 +65,9 @@ func Yesterday() time.Time {
 	diff := now.Add(-time.Hour * 24)
 	return BeginOfDate(diff)
 }
+
+func DaysBeforeNow(days int64) time.Time {
+	now := time.Now()
+	diff := now.Add(-time.Hour * 24 * time.Duration(days))
+	return BeginOfDate(diff)
+}
