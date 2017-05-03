@@ -1,7 +1,10 @@
 package file
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -64,4 +67,18 @@ func Size(path string) int64 {
 		return info.Size()
 	}
 	return 0
+}
+
+func GetSHA1(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	hash := sha1.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	hashInBytes := hash.Sum(nil)
+	return hex.EncodeToString(hashInBytes), nil
 }
