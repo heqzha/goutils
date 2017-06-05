@@ -2,10 +2,11 @@ package runtime
 
 import (
 	"fmt"
-	"github.com/heqzha/goutils/date"
 	"reflect"
 	"runtime"
 	"time"
+
+	"github.com/heqzha/goutils/date"
 )
 
 func GetFuncName(f interface{}) string {
@@ -43,6 +44,16 @@ func PrintTimeCost(f interface{}, args ...interface{}) []interface{} {
 	now := time.Now()
 	defer func() {
 		fmt.Printf("%s:%v  cost %s\n", GetFuncName(f), args, date.DateDurationFrom(now))
+	}()
+	return RunFunc(f, args...)
+}
+
+func PrintTimeCostSwitch(on bool, f interface{}, args ...interface{}) []interface{} {
+	now := time.Now()
+	defer func() {
+		if on {
+			fmt.Printf("%s:%v  cost %s\n", GetFuncName(f), args, date.DateDurationFrom(now))
+		}
 	}()
 	return RunFunc(f, args...)
 }
