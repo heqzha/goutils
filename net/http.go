@@ -10,10 +10,10 @@ import (
 )
 
 func HTTPGet(url string, headers map[string]string, cookies []*http.Cookie) ([]byte, error) {
-	return HTTPGetWithTimeOut(url, headers, cookies, time.Duration(0))
+	return HTTPGetWithTimeout(url, headers, cookies, time.Duration(0))
 }
 
-func HTTPGetWithTimeOut(url string, headers map[string]string, cookies []*http.Cookie, timeout time.Duration) ([]byte, error) {
+func HTTPGetWithTimeout(url string, headers map[string]string, cookies []*http.Cookie, timeout time.Duration) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
