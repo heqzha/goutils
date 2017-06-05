@@ -6,9 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func HTTPGet(url string, headers map[string]string, cookies []*http.Cookie) ([]byte, error) {
+	return HTTPGetWithTimeOut(url, headers, cookies, time.Duration(0))
+}
+
+func HTTPGetWithTimeOut(url string, headers map[string]string, cookies []*http.Cookie, timeout time.Duration) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -21,8 +26,9 @@ func HTTPGet(url string, headers map[string]string, cookies []*http.Cookie) ([]b
 	for _, c := range cookies {
 		req.AddCookie(c)
 	}
-
-	client := new(http.Client)
+	client := http.Client{
+		Timeout: timeout,
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
