@@ -156,6 +156,9 @@ func (h *MongoDBHandler) Exist(db, cName string, selector BsonM) (bool, error) {
 }
 
 func (h *MongoDBHandler) FindByID(db, cName, id string, result interface{}) error {
+	if !h.CheckID(id) {
+		return fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -164,6 +167,9 @@ func (h *MongoDBHandler) FindByID(db, cName, id string, result interface{}) erro
 }
 
 func (h *MongoDBHandler) CountByID(db, cName, id string) (int, error) {
+	if !h.CheckID(id) {
+		return 0, fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -204,6 +210,9 @@ func (h *MongoDBHandler) Update(db, cName string, selector BsonM, cObject interf
 }
 
 func (h *MongoDBHandler) UpdateByID(db, cName, id string, cObject interface{}) error {
+	if !h.CheckID(id) {
+		return fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -224,6 +233,9 @@ func (h *MongoDBHandler) Upsert(db, cName string, selector BsonM, cObject interf
 }
 
 func (h *MongoDBHandler) UpsertedId(db, cName, id string, cObject interface{}) (int, error) {
+	if !h.CheckID(id) {
+		return 0, fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -256,6 +268,9 @@ func (h *MongoDBHandler) RemoveAll(db, cName string, selector BsonM) (int, error
 }
 
 func (h *MongoDBHandler) RemoveByID(db, cName, id string) error {
+	if !h.CheckID(id) {
+		return fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
@@ -264,6 +279,9 @@ func (h *MongoDBHandler) RemoveByID(db, cName, id string) error {
 }
 
 func (h *MongoDBHandler) findAndModifyByID(cmd, db, cName, id string, updater BsonM, result interface{}) error {
+	if !h.CheckID(id) {
+		return fmt.Errorf("Invalid ID %s", id)
+	}
 	se := h.se.Copy()
 	defer se.Close()
 	c := se.DB(db).C(cName)
