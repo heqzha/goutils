@@ -11,13 +11,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PGEngine struct {
+type PGMasterEngine struct {
 	*xorm.Engine
 	dsn string
-}
-
-type PGMasterEngine struct {
-	*PGEngine
 }
 
 func (pg *PGMasterEngine) Init(user, password, dbName, host, port string, ssl bool, level xormcore.LogLevel, showSQL bool) error {
@@ -39,7 +35,6 @@ func (pg *PGMasterEngine) Init(user, password, dbName, host, port string, ssl bo
 	} else {
 		dsn += " sslmode=disable"
 	}
-	pg = &PGMasterEngine{}
 	engine, err := xorm.NewEngine("postgres", dsn)
 	if err != nil {
 		return err
