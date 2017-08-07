@@ -67,7 +67,6 @@ func (pg *PGMasterEngine) EnableEngineStatusChecker(t time.Duration) {
 
 func (pg *PGMasterEngine) GetAutoCloseSession() *xorm.Session {
 	s := pg.NewSession()
-	s.IsAutoClose = true
 	return s
 }
 
