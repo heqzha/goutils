@@ -220,6 +220,15 @@ func (h *MongoDBHandler) UpdateByID(db, cName, id string, cObject interface{}) e
 	return c.UpdateId(bson.ObjectIdHex(id).Hex(), cObject)
 }
 
+func (h *MongoDBHandler) UpdateAll(db, cName string, selector BsonM, cObject interface{}) (int, error) {
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	info, err := c.UpdateAll(selector, cObject)
+	return info.Matched, err
+}
+
 func (h *MongoDBHandler) Upsert(db, cName string, selector BsonM, cObject interface{}) (int, error) {
 	se := h.se.Copy()
 	defer se.Close()
