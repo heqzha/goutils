@@ -13,6 +13,27 @@ func HTTPGet(url string, headers map[string]string, cookies []*http.Cookie) ([]b
 	return HTTPGetWithTimeout(url, headers, cookies, time.Duration(0))
 }
 
+func CustomRequest(method string, url string, bodyData []byte) ([]byte, error) {
+	b := bytes.NewReader(bodyData)
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, b)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "plain/text")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 && resp.StatusCode != 202 {
+		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, resp.StatusCode)
+	}
+
+	return ioutil.ReadAll(resp.Body)
+}
+
 func HTTPGetWithTimeout(url string, headers map[string]string, cookies []*http.Cookie, timeout time.Duration) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -57,25 +78,12 @@ func HTTPPost(url string, bodyData []byte) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
+func HTTPDelete(url string, bodyData []byte) ([]byte, error) {
+	return CustomRequest("DELETE", url, bodyData)
+}
+
 func HTTPPut(url string, bodyData []byte) ([]byte, error) {
-	b := bytes.NewReader(bodyData)
-	client := &http.Client{}
-	req, err := http.NewRequest("PUT", url, b)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "plain/text")
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 && resp.StatusCode != 202 {
-		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, resp.StatusCode)
-	}
-
-	return ioutil.ReadAll(resp.Body)
+	return CustomRequest("PUT", url, bodyData)
 }
 
 func HTTPParseURL(srcURL string, params map[string][]string) (string, error) {
