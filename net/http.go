@@ -27,7 +27,7 @@ func CustomRequest(method string, url string, bodyData []byte) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 && resp.StatusCode != 202 {
+	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, resp.StatusCode)
 	}
 
@@ -56,7 +56,7 @@ func HTTPGetWithTimeout(url string, headers map[string]string, cookies []*http.C
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != 200 {
+	if res.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, res.StatusCode)
 	}
 
@@ -71,7 +71,7 @@ func HTTPPost(url string, bodyData []byte) ([]byte, error) {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != 200 && res.StatusCode != 202 {
+	if res.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, res.StatusCode)
 	}
 
@@ -121,7 +121,7 @@ func FormPost(url string, bodyData []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	if res.StatusCode != 200 && res.StatusCode != 202 {
+	if res.StatusCode >= 400 {
 		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, res.StatusCode)
 	}
 
