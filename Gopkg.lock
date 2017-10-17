@@ -44,23 +44,22 @@
   revision = "b59de7bf2780da1a6706baffd108088dacfd8bc4"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/seefan/gopool"
-  packages = ["."]
-  revision = "ec031c57fa1ded0e8071866fefeb875c2ba1d463"
-
-[[projects]]
-  branch = "master"
   name = "github.com/seefan/gossdb"
-  packages = [".","conf"]
-  revision = "53baaa24b9e20830d41fe272ccdb9e4830bb0d63"
-  source = "github.com/seefan/gossdb"
+  packages = ["."]
+  revision = "419f4298088c2542a8467595a8692ee45be25f08"
+  version = "v1.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/seefan/to"
   packages = ["."]
   revision = "d8d07055f0522d7fa9d25e229feb8bc833c44b49"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/ssdb/gossdb"
+  packages = ["ssdb"]
+  revision = "96753833c5cc3ea638335ecf9b1cf1b5f8901ca3"
 
 [[projects]]
   branch = "v1"
@@ -83,6 +82,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a8e8002f2234c0c4ca4b937fffa26d8e29fa4a7c5870a6900f36155dcc12dce"
+  inputs-digest = "6424e89c0a14f957f4e0873bd3748310bcd7bb4e651aa8b1c81991cb09b45188"
   solver-name = "gps-cdcl"
   solver-version = 1

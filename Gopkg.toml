@@ -43,9 +43,7 @@
 
 [[constraint]]
   name = "github.com/seefan/gossdb"
-  branch = "master"
-  source = "github.com/seefan/gossdb"
-  # version = "1.0.0"
+  version = "1.0.0"
 
 [[constraint]]
   branch = "v2"

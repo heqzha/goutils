@@ -3,9 +3,8 @@ package db
 import (
 	"fmt"
 	"math"
+	"sort"
 	"time"
-
-	"github.com/seefan/gossdb/conf"
 
 	"github.com/seefan/gossdb"
 )
@@ -15,13 +14,13 @@ type SSDBHandler struct {
 }
 
 func SSDBNewHandlerDefault(host string, port int) (*SSDBHandler, error) {
-	return SSDBNewHandler(&conf.Config{
+	return SSDBNewHandler(&gossdb.Config{
 		Host: host,
 		Port: port,
 	})
 }
 
-func SSDBNewHandler(conf *conf.Config) (*SSDBHandler, error) {
+func SSDBNewHandler(conf *gossdb.Config) (*SSDBHandler, error) {
 	conn, err := gossdb.NewPool(conf)
 	if err != nil {
 		return nil, err
@@ -379,13 +378,36 @@ func (h *SSDBHandler) ZRRange(key string, offset, limit int64) (map[string]int64
 	return cli.Zrrange(key, offset, limit)
 }
 
+type ZPair struct {
+	Key   string
+	Value int64
+}
+
 func (h *SSDBHandler) ZRRangeSlice(key string, offset, limit int64) ([]string, []int64, error) {
-	cli, err := h.newClient()
+	zset, err := h.ZRRange(key, offset, limit)
 	if err != nil {
 		return nil, nil, err
 	}
-	defer cli.Close()
-	return cli.Zrrange_slice(key, offset, limit)
+	zPairs := []*ZPair{}
+	for field, score := range zset {
+		p := &ZPair{
+			Key:   field,
+			Value: score,
+		}
+		zPairs = append(zPairs, p)
+	}
+	sort.Slice(zPairs, func(i, j int) bool {
+		izp := zPairs[i]
+		jzp := zPairs[j]
+		return izp.Value > jzp.Value
+	})
+	fields := []string{}
+	scores := []int64{}
+	for _, p := range zPairs {
+		fields = append(fields, p.Key)
+		scores = append(scores, p.Value)
+	}
+	return fields, scores, nil
 }
 
 func (h *SSDBHandler) ZRange(key string, offset, limit int64) (map[string]int64, error) {
