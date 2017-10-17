@@ -317,21 +317,17 @@ func (h *SSDBHandler) ZSetWithExp(key string, exp time.Duration, field string, s
 }
 
 func (h *SSDBHandler) ZMultiSet(key string, fieldScore map[string]int64) error {
-	return h.ZMultiSetWithExp(key, 0, fieldScore)
-}
-
-func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore map[string]int64) error {
 	cli, err := h.newClient()
 	if err != nil {
 		return err
 	}
 	defer cli.Close()
 
-	err = cli.MultiZset(key, fieldScore)
-	if err != nil {
-		return err
-	}
-	return h.Expire(key, exp)
+	return cli.MultiZset(key, fieldScore)
+}
+
+func (h *SSDBHandler) ZMultiSetWithExp(key string, exp time.Duration, fieldScore map[string]int64) error {
+	return fmt.Errorf("SSDB not support set expire to ZSet")
 }
 
 func (h *SSDBHandler) ZGet(key, field string) (int64, error) {
@@ -370,6 +366,42 @@ func (h *SSDBHandler) ZRScan(key, fieldStart string, start, end interface{}, lim
 	}
 	defer cli.Close()
 	return cli.Zrscan(key, fieldStart, start, end, limit)
+}
+
+func (h *SSDBHandler) ZRRange(key string, offset, limit int64) (map[string]int64, error) {
+	cli, err := h.newClient()
+	if err != nil {
+		return nil, err
+	}
+	defer cli.Close()
+	return cli.Zrrange(key, offset, limit)
+}
+
+func (h *SSDBHandler) ZRRangeSlice(key string, offset, limit int64) ([]string, []int64, error) {
+	cli, err := h.newClient()
+	if err != nil {
+		return nil, nil, err
+	}
+	defer cli.Close()
+	return cli.Zrrange_slice(key, offset, limit)
+}
+
+func (h *SSDBHandler) ZRange(key string, offset, limit int64) (map[string]int64, error) {
+	cli, err := h.newClient()
+	if err != nil {
+		return nil, err
+	}
+	defer cli.Close()
+	return cli.Zrange(key, offset, limit)
+}
+
+func (h *SSDBHandler) ZSize(key string) (int64, error) {
+	cli, err := h.newClient()
+	if err != nil {
+		return 0, err
+	}
+	defer cli.Close()
+	return cli.Zsize(key)
 }
 
 func (h *SSDBHandler) ZExists(key, field string) (bool, error) {
