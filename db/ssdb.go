@@ -5,6 +5,8 @@ import (
 	"math"
 	"time"
 
+	"github.com/seefan/gossdb/conf"
+
 	"github.com/seefan/gossdb"
 )
 
@@ -13,7 +15,7 @@ type SSDBHandler struct {
 }
 
 func SSDBNewHandlerDefault(host string, port int) (*SSDBHandler, error) {
-	return SSDBNewHandler(&gossdb.Config{
+	return SSDBNewHandler(&conf.Config{
 		Host: host,
 		Port: port,
 	})
