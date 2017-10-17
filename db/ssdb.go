@@ -21,7 +21,7 @@ func SSDBNewHandlerDefault(host string, port int) (*SSDBHandler, error) {
 	})
 }
 
-func SSDBNewHandler(conf *gossdb.Config) (*SSDBHandler, error) {
+func SSDBNewHandler(conf *conf.Config) (*SSDBHandler, error) {
 	conn, err := gossdb.NewPool(conf)
 	if err != nil {
 		return nil, err
