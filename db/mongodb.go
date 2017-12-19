@@ -147,6 +147,14 @@ func (h *MongoDBHandler) FindOne(db, cName string, selector BsonM, offset, limit
 	return c.Find(selector).Skip(offset).Limit(limit).One(result)
 }
 
+func (h *MongoDBHandler) FindAllAll(db, cName string, selector BsonM, sort []string, results interface{}) error {
+	se := h.se.Copy()
+	defer se.Close()
+	c := se.DB(db).C(cName)
+
+	return c.Find(selector).Sort(sort...).All(results)
+}
+
 func (h *MongoDBHandler) Find(db, cName string, selector BsonM, result interface{}) error {
 	se := h.se.Copy()
 	defer se.Close()
