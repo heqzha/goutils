@@ -32,6 +32,14 @@ func DateUnix(date string) int64 {
 	return t.Unix()
 }
 
+func DateMillisecond(date string) int64 {
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return 0
+	}
+	return t.UnixNano() / int64(time.Millisecond/time.Nanosecond)
+}
+
 func DateUnixByLocation(date string, location string) int64 {
 	loc, err := time.LoadLocation(location)
 	var t time.Time
