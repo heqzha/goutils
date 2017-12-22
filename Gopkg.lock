@@ -14,6 +14,12 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/garyburd/redigo"
+  packages = ["internal","redis"]
+  revision = "47dc60e71eed504e3ef8e77ee3c6fe720f3be57f"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/go-xorm/builder"
   packages = ["."]
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6424e89c0a14f957f4e0873bd3748310bcd7bb4e651aa8b1c81991cb09b45188"
+  inputs-digest = "6ce5a61397b809edd6d032aa07931ca0c5aa34e056f59ddba5f58ea1f5431008"
   solver-name = "gps-cdcl"
   solver-version = 1
