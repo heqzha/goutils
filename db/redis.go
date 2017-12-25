@@ -12,6 +12,17 @@ type RedisHandler struct {
 	Pool *redis.Pool
 }
 
+func (h *RedisHandler) do(cmd string, args ...interface{}) (interface{}, error) {
+	conn := h.Pool.Get()
+	defer conn.Close()
+
+	data, err := conn.Do(cmd, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%s args %v: %v", cmd, args, err)
+	}
+	return data, nil
+}
+
 func (h *RedisHandler) Init(addr string) {
 	h.Close()
 	h.Pool = &redis.Pool{
@@ -138,6 +149,27 @@ func (h *RedisHandler) Incr(key string) (int, error) {
 	return redis.Int(conn.Do("INCR", key))
 }
 
+func (h *RedisHandler) Llen(key string) (int64, error) {
+	data, err := h.do("LLEN", key)
+	if err != nil {
+		return int64(0), err
+	}
+	return data.(int64), nil
+}
+
+func (h *RedisHandler) Lpop(key string) (string, error) {
+	data, err := h.do("LPOP", key)
+	if err != nil {
+		return "", err
+	}
+	return string(data.([]byte)), nil
+}
+
+func (h *RedisHandler) Rpush(key string, value string) error {
+	_, err := h.do("RPUSH", key, value)
+	return err
+}
+
 func (h *RedisHandler) Zadd(key string, value []byte, score int64) error {
 
 	conn := h.Pool.Get()
@@ -148,7 +180,7 @@ func (h *RedisHandler) Zadd(key string, value []byte, score int64) error {
 		if len(v) > 15 {
 			v = v[0:12] + "..."
 		}
-		return fmt.Errorf("err zadd keyy %s to %s: err  %v", key, v, conn.Err())
+		return fmt.Errorf("error zadd key %s to %s: err  %v", key, v, conn.Err())
 	}
 	return err
 }

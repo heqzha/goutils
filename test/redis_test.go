@@ -196,3 +196,32 @@ func TestRedisHandlerExpire(t *testing.T) {
 	}
 	t.Log(string(val))
 }
+
+func TestRedisHandlerL(t *testing.T) {
+	handler := &db.RedisHandler{}
+	defer handler.Close()
+	handler.Init("127.0.0.1:9601")
+	key := "test_set"
+
+	for _, v := range []string{"1", "2", "safsdf"} {
+		if err := handler.Rpush(key, v); err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	l, err := handler.Llen(key)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("length of list: %d", l)
+	for ; err == nil && l > 0; l, err = handler.Llen(key) {
+		data, err := handler.Lpop(key)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		t.Log(data)
+	}
+}
