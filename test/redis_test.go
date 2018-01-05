@@ -43,7 +43,7 @@ func TestRedisHandlerSetGet(t *testing.T) {
 		t.Logf("exist %s, deleted!", key)
 	}
 
-	if err := handler.Set(key, []byte("123")); err != nil {
+	if err := handler.Set(key, "123"); err != nil {
 		t.Error(err)
 		return
 	}
@@ -62,7 +62,7 @@ func TestRedisHandlerGetKeys(t *testing.T) {
 	handler.Init("127.0.0.1:9600")
 	key := "test_set"
 
-	if err := handler.Set(key, []byte("123")); err != nil {
+	if err := handler.Set(key, "123"); err != nil {
 		t.Error(err)
 		return
 	}
@@ -97,11 +97,16 @@ func TestRedisHandlerZ(t *testing.T) {
 	key := "test_z"
 
 	for index := 0; index < 3; index++ {
-		if err := handler.Zadd(key, []byte(strconv.Itoa(index)), int64(index)); err != nil {
+		if err := handler.Zadd(key, strconv.Itoa(index), int64(index)); err != nil {
 			t.Error(err)
 			return
 		}
 	}
+	if err := handler.Zincrby(key, "test", 3); err != nil {
+		t.Error(err)
+		return
+	}
+
 	card, err := handler.Zcard(key)
 	if err != nil {
 		t.Error(err)
@@ -155,7 +160,7 @@ func TestRedisHandlerExpire(t *testing.T) {
 	handler.Init("127.0.0.1:9600")
 	key := "test_set"
 
-	if err := handler.Set(key, []byte("123")); err != nil {
+	if err := handler.Set(key, "123"); err != nil {
 		t.Error(err)
 		return
 	}

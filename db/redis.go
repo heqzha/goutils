@@ -66,27 +66,26 @@ func (h *RedisHandler) Ping() error {
 	return nil
 }
 
-func (h *RedisHandler) Get(key string) ([]byte, error) {
+func (h *RedisHandler) Get(key string) (string, error) {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
 
-	var data []byte
-	data, err := redis.Bytes(conn.Do("GET", key))
+	data, err := redis.String(conn.Do("GET", key))
 	if err != nil {
 		return data, fmt.Errorf("error getting key %s: %v", key, err)
 	}
-	return data, err
+	return data, nil
 }
 
-func (h *RedisHandler) Set(key string, value []byte) error {
+func (h *RedisHandler) Set(key string, value string) error {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
 
 	_, err := conn.Do("SET", key, value)
 	if err != nil {
-		v := string(value)
+		v := value
 		if len(v) > 15 {
 			v = v[0:12] + "..."
 		}
@@ -158,11 +157,11 @@ func (h *RedisHandler) Llen(key string) (int64, error) {
 }
 
 func (h *RedisHandler) Lpop(key string) (string, error) {
-	data, err := h.do("LPOP", key)
+	data, err := redis.String(h.do("LPOP", key))
 	if err != nil {
 		return "", err
 	}
-	return string(data.([]byte)), nil
+	return data, nil
 }
 
 func (h *RedisHandler) Rpush(key string, value string) error {
@@ -170,8 +169,7 @@ func (h *RedisHandler) Rpush(key string, value string) error {
 	return err
 }
 
-func (h *RedisHandler) Zadd(key string, value []byte, score int64) error {
-
+func (h *RedisHandler) Zadd(key string, value string, score int64) error {
 	conn := h.Pool.Get()
 	defer conn.Close()
 	_, err := conn.Do("ZADD", key, score, value)
@@ -197,7 +195,24 @@ func (h *RedisHandler) Zcard(key string) (int, error) {
 	return int(res.(int64)), nil
 }
 
-func (h *RedisHandler) Zrange(key string, offset, limit int) ([][2]string, error) {
+func (h *RedisHandler) mapZrangeResults(ress []interface{}) ([]map[string]int64, error) {
+	results := []map[string]int64{}
+	for idx, _ := range ress {
+		if idx&0x1 == 0 {
+			score, err := strconv.ParseInt(string(ress[idx+1].([]byte)), 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			val := map[string]int64{
+				string(ress[idx].([]byte)): score,
+			}
+			results = append(results, val)
+		}
+	}
+	return results, nil
+}
+
+func (h *RedisHandler) Zrange(key string, offset, limit int) ([]map[string]int64, error) {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
@@ -206,17 +221,10 @@ func (h *RedisHandler) Zrange(key string, offset, limit int) ([][2]string, error
 	if err != nil {
 		return nil, fmt.Errorf("error zrange key %s %v", key, err)
 	}
-	results := [][2]string{}
-	ress := res.([]interface{})
-	for idx, _ := range ress {
-		if idx&0x1 == 0 {
-			results = append(results, [2]string{string(ress[idx+1].([]byte)), string(ress[idx].([]byte))})
-		}
-	}
-	return results, nil
+	return h.mapZrangeResults(res.([]interface{}))
 }
 
-func (h *RedisHandler) Zrangebyscore(key string, min, max int64, offset, limit int) ([][2]string, error) {
+func (h *RedisHandler) Zrangebyscore(key string, min, max int64, offset, limit int) ([]map[string]int64, error) {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
@@ -225,17 +233,10 @@ func (h *RedisHandler) Zrangebyscore(key string, min, max int64, offset, limit i
 	if err != nil {
 		return nil, fmt.Errorf("error zrangebyscore key %s %v", key, err)
 	}
-	results := [][2]string{}
-	ress := res.([]interface{})
-	for idx, _ := range ress {
-		if idx&0x1 == 0 {
-			results = append(results, [2]string{string(ress[idx+1].([]byte)), string(ress[idx].([]byte))})
-		}
-	}
-	return results, nil
+	return h.mapZrangeResults(res.([]interface{}))
 }
 
-func (h *RedisHandler) Zrevrangebyscore(key string, min, max int64, offset, limit int) ([][2]string, error) {
+func (h *RedisHandler) Zrevrangebyscore(key string, min, max int64, offset, limit int) ([]map[string]int64, error) {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
@@ -244,14 +245,7 @@ func (h *RedisHandler) Zrevrangebyscore(key string, min, max int64, offset, limi
 	if err != nil {
 		return nil, fmt.Errorf("error zrangebyscore key %s %v", key, err)
 	}
-	results := [][2]string{}
-	ress := res.([]interface{})
-	for idx, _ := range ress {
-		if idx&0x1 == 0 {
-			results = append(results, [2]string{string(ress[idx+1].([]byte)), string(ress[idx].([]byte))})
-		}
-	}
-	return results, nil
+	return h.mapZrangeResults(res.([]interface{}))
 }
 
 func (h *RedisHandler) Zcount(key string, min, max int64) (int, error) {
