@@ -128,6 +128,13 @@ func TestRedisHandlerZ(t *testing.T) {
 	}
 	t.Log(r)
 
+	r, err = handler.ZrangebyscoreInf(key, 0, 10)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(r)
+
 	r, err = handler.Zrevrangebyscore(key, -1, 1, 0, 10)
 	if err != nil {
 		t.Error(err)
@@ -135,7 +142,21 @@ func TestRedisHandlerZ(t *testing.T) {
 	}
 	t.Log(r)
 
+	r, err = handler.ZrevrangebyscoreInf(key, 0, 10)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(r)
+
 	cnt, err := handler.Zcount(key, -1, 1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(cnt)
+
+	cnt, err = handler.ZcountInf(key)
 	if err != nil {
 		t.Error(err)
 		return

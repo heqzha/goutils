@@ -236,6 +236,18 @@ func (h *RedisHandler) Zrangebyscore(key string, min, max int64, offset, limit i
 	return h.mapZrangeResults(res.([]interface{}))
 }
 
+func (h *RedisHandler) ZrangebyscoreInf(key string, offset, limit int) ([]map[string]int64, error) {
+
+	conn := h.Pool.Get()
+	defer conn.Close()
+
+	res, err := conn.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES", "LIMIT", offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("error zrangebyscore key %s %v", key, err)
+	}
+	return h.mapZrangeResults(res.([]interface{}))
+}
+
 func (h *RedisHandler) Zrevrangebyscore(key string, min, max int64, offset, limit int) ([]map[string]int64, error) {
 
 	conn := h.Pool.Get()
@@ -248,12 +260,36 @@ func (h *RedisHandler) Zrevrangebyscore(key string, min, max int64, offset, limi
 	return h.mapZrangeResults(res.([]interface{}))
 }
 
+func (h *RedisHandler) ZrevrangebyscoreInf(key string, offset, limit int) ([]map[string]int64, error) {
+
+	conn := h.Pool.Get()
+	defer conn.Close()
+
+	res, err := conn.Do("ZREVRANGEBYSCORE", key, "+inf", "-inf", "WITHSCORES", "LIMIT", offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("error zrangebyscore key %s %v", key, err)
+	}
+	return h.mapZrangeResults(res.([]interface{}))
+}
+
 func (h *RedisHandler) Zcount(key string, min, max int64) (int, error) {
 
 	conn := h.Pool.Get()
 	defer conn.Close()
 
 	res, err := conn.Do("ZCOUNT", key, "("+strconv.FormatInt(min, 10), strconv.FormatInt(max, 10))
+	if err != nil {
+		return -1, fmt.Errorf("error zcount key %s %v", key, err)
+	}
+	return int(res.(int64)), nil
+}
+
+func (h *RedisHandler) ZcountInf(key string) (int, error) {
+
+	conn := h.Pool.Get()
+	defer conn.Close()
+
+	res, err := conn.Do("ZCOUNT", key, "-inf", "+inf")
 	if err != nil {
 		return -1, fmt.Errorf("error zcount key %s %v", key, err)
 	}
