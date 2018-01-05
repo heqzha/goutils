@@ -278,6 +278,20 @@ func (h *RedisHandler) Zremrangebyrank(key string, start, stop int64) error {
 	return err
 }
 
+func (h *RedisHandler) Zincrby(key string, value string, score int64) error {
+	conn := h.Pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("ZINCRBY", key, score, value)
+	if err != nil {
+		v := value
+		if len(v) > 15 {
+			v = v[0:12] + "..."
+		}
+		return fmt.Errorf("error zadd key %s to %s: err  %v", key, v, conn.Err())
+	}
+	return err
+}
+
 func (h *RedisHandler) Expire(key string, seconds int64) error {
 
 	conn := h.Pool.Get()
