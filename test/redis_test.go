@@ -242,6 +242,14 @@ func TestRedisHandlerL(t *testing.T) {
 		return
 	}
 	t.Logf("length of list: %d", l)
+
+	lr, err := handler.Lrange(key, 0, 0)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(lr)
+
 	for ; err == nil && l > 0; l, err = handler.Llen(key) {
 		data, err := handler.Lpop(key)
 		if err != nil {

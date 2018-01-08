@@ -169,6 +169,28 @@ func (h *RedisHandler) Rpush(key string, value string) error {
 	return err
 }
 
+func (h *RedisHandler) stringSliceResults(l []interface{}) []string {
+	results := []string{}
+	for _, e := range l {
+		results = append(results, string(e.([]byte)))
+	}
+	return results
+}
+
+func (h *RedisHandler) Lrange(key string, offset, limit int) ([]string, error) {
+	start := 0
+	stop := -1
+	if limit > 0 {
+		start = offset
+		stop = offset*limit + limit
+	}
+	res, err := h.do("LRANGE", key, start, stop)
+	if err != nil {
+		return nil, fmt.Errorf("error lrange key %s %v", key, err)
+	}
+	return h.stringSliceResults(res.([]interface{})), nil
+}
+
 func (h *RedisHandler) Zadd(key string, value string, score int64) error {
 	conn := h.Pool.Get()
 	defer conn.Close()
