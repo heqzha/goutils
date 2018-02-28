@@ -1,8 +1,10 @@
 package encoding
 
 import (
-	"encoding/json"
+	"github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func ObjToJSON(o interface{}) (string, error) {
 	js, err := json.Marshal(o)
