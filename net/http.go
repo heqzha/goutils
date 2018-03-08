@@ -78,6 +78,37 @@ func HTTPPost(url string, bodyData []byte) ([]byte, error) {
 	return ioutil.ReadAll(res.Body)
 }
 
+func HTTPPostV1(url string, bodyData []byte, headers map[string]string, cookies []*http.Cookie, timeout time.Duration) ([]byte, error) {
+	b := bytes.NewReader(bodyData)
+	req, err := http.NewRequest("POST", url, b)
+	if err != nil {
+		return nil, err
+	}
+
+	for name, value := range headers {
+		req.Header.Set(name, value)
+	}
+
+	for _, c := range cookies {
+		req.AddCookie(c)
+	}
+
+	client := http.Client{
+		Timeout: timeout,
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 400 {
+		return nil, fmt.Errorf("Failed to call [%s], status code: %d", url, res.StatusCode)
+	}
+
+	return ioutil.ReadAll(res.Body)
+}
+
 func HTTPDelete(url string, bodyData []byte) ([]byte, error) {
 	return CustomRequest("DELETE", url, bodyData)
 }
